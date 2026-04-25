@@ -1,0 +1,172 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Manrope', sans-serif;
+    background-color: #fbf9f4;
+    color: #1b1c19;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .font-serif {
+    font-family: 'Noto Serif', serif;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@layer components {
+  .wood-card {
+    @apply rounded-none border border-wood-border/40 bg-wood-dark/70 backdrop-blur-sm;
+  }
+
+  .bronze-divider {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-bronze/60 to-transparent;
+  }
+
+  .section-title {
+    @apply font-serif text-3xl md:text-5xl text-cream;
+  }
+
+  .section-title span {
+    @apply text-bronze-light italic;
+  }
+
+  .btn-bronze {
+    @apply inline-flex items-center justify-center border border-bronze bg-bronze/95 px-5 py-2.5 font-sans text-xs tracking-widest uppercase text-wood-dark transition-all hover:bg-bronze-light;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center border border-bronze/70 px-5 py-2.5 font-sans text-xs tracking-widest uppercase text-cream transition-all hover:border-bronze-light hover:text-bronze-light;
+  }
+
+  .input-field {
+    @apply w-full border border-wood-border/50 bg-wood-surface px-4 py-3 font-sans text-sm text-cream outline-none transition-all placeholder:text-cream-muted/35 focus:border-bronze;
+  }
+
+  .nav-link {
+    @apply font-sans text-xs tracking-widest uppercase text-cream-muted transition-colors hover:text-bronze-light;
+  }
+
+  .nav-link.active {
+    @apply text-bronze;
+  }
+
+  .admin-table-row {
+    @apply border-b border-wood-border/30 transition-colors hover:bg-wood-surface/40;
+  }
+}
+
+@layer utilities {
+  .bg-hero-overlay {
+    background:
+      linear-gradient(to right, rgba(16, 9, 5, 0.85), rgba(16, 9, 5, 0.45) 45%, rgba(16, 9, 5, 0.8));
+  }
+
+  .bg-wood-grain {
+    background-image:
+      repeating-linear-gradient(
+        110deg,
+        rgba(255, 255, 255, 0.03) 0,
+        rgba(255, 255, 255, 0.03) 2px,
+        rgba(0, 0, 0, 0.03) 2px,
+        rgba(0, 0, 0, 0.03) 8px
+      );
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.35s ease-out both;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.55s ease-out both;
+  }
+
+  .animate-kanna-slide {
+    animation: kannaSlide 0.8s ease-out both;
+  }
+
+  .animate-mobile-menu-backdrop {
+    animation: mobileMenuBackdrop 0.22s ease-out both;
+  }
+
+  .animate-mobile-menu-panel {
+    animation: mobileMenuPanel 0.28s cubic-bezier(0.2, 0.7, 0, 1) both;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes kannaSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes mobileMenuBackdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes mobileMenuPanel {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes curlRise {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.7);
+  }
+  30% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-32px) scale(1.1);
+  }
+}
