@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
+import { SiteSettingsProvider } from './context/SiteSettingsContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicLayout from './components/layout/PublicLayout'
 import Spinner from './components/ui/Spinner'
@@ -18,6 +19,8 @@ const PrivacyPage = lazy(() => import('./pages/public/PrivacyPage'))
 const CustomerLoginPage = lazy(() => import('./pages/public/CustomerLoginPage'))
 const CustomerRegisterPage = lazy(() => import('./pages/public/CustomerRegisterPage'))
 const CustomerAccountPage = lazy(() => import('./pages/public/CustomerAccountPage'))
+const CustomerInquiryDetailPage = lazy(() => import('./pages/public/CustomerInquiryDetailPage'))
+const ProjectTrackingPage = lazy(() => import('./pages/public/ProjectTrackingPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/public/ForgotPasswordPage'))
 
 // Lazy load Admin Pages
@@ -31,8 +34,9 @@ const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'))
 
 const App = () => {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <SiteSettingsProvider>
+      <AuthProvider>
+        <BrowserRouter>
 
         {/* Toast notifications */}
         <Toaster
@@ -67,6 +71,8 @@ const App = () => {
             <Route path="/register"      element={<PublicLayout><CustomerRegisterPage /></PublicLayout>} />
             <Route path="/forgot-password" element={<PublicLayout><ForgotPasswordPage /></PublicLayout>} />
             <Route path="/account"       element={<PublicLayout><CustomerAccountPage /></PublicLayout>} />
+            <Route path="/account/inquiry/:id" element={<PublicLayout><CustomerInquiryDetailPage /></PublicLayout>} />
+            <Route path="/track-project/:id" element={<ProjectTrackingPage />} />
 
             {/* ── ADMIN AUTH ──────────────────────── */}
             <Route path="/admin/login"   element={<LoginPage />} />
@@ -100,8 +106,9 @@ const App = () => {
           </Routes>
         </Suspense>
 
-      </BrowserRouter>
-    </AuthProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </SiteSettingsProvider>
   )
 }
 

@@ -117,6 +117,18 @@ export const authService = {
     }
   },
 
+  whatsappRequestOtp: async (phoneNumber) => {
+    const response = await api.post('/auth/whatsapp/request-otp', { phoneNumber })
+    return response.data
+  },
+
+  whatsappVerifyOtp: async (phoneNumber, code) => {
+    const response = await api.post('/auth/whatsapp/verify-otp', { phoneNumber, code })
+    const authData = response.data.data
+    persistSession(authData)
+    return authData
+  },
+
   logoutLocal: () => {
     clearSession()
   },

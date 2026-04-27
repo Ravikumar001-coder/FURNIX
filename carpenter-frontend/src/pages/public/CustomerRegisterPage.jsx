@@ -1,9 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useSiteSettings } from '../../context/SiteSettingsContext'
 import toast from 'react-hot-toast'
 import { Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 import GoogleSignInButton from '../../components/auth/GoogleSignInButton'
+import WhatsAppLoginModal from '../../components/auth/WhatsAppLoginModal'
+import logo from '/assets/furnix-logo.png'
+import { buildWhatsAppLink, getSiteSetting } from '../../utils/siteSettings'
 
 const CustomerRegisterPage = () => {
   const [form, setForm] = useState({
@@ -15,10 +19,23 @@ const CustomerRegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
   const nameInputRef = useRef(null)
 
   const { register, googleLogin } = useAuth()
+  const { settings } = useSiteSettings()
   const navigate = useNavigate()
+  const brandName = getSiteSetting(settings, 'brand.name', 'Furnix')
+  const whatsappSignupLink = buildWhatsAppLink(
+    settings,
+    `I want to register for a ${brandName} account`
+  )
+  const isWhatsAppConfigured = Boolean(whatsappSignupLink)
+
+  const handleWhatsAppClick = (event) => {
+    event.preventDefault()
+    setShowWhatsAppModal(true)
+  }
 
   useEffect(() => {
     if (nameInputRef.current) {
@@ -66,18 +83,31 @@ const CustomerRegisterPage = () => {
   return (
     <div className="pt-24 pb-20 px-4 min-h-screen flex flex-col items-center justify-center bg-surface-container-lowest">
       <Link to="/" className="mb-8 block">
-        <h2 className="font-headline italic text-primary text-4xl tracking-tight text-center">Furnix</h2>
+        <img src={logo} alt={brandName} className="h-20 md:h-25 w-auto object-contain mx-auto" />
       </Link>
 
       <div className="w-full max-w-[440px] bg-surface-container-lowest border border-outline-variant/30 p-8 sm:p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="text-center mb-8">
           <h1 className="font-headline text-2xl text-on-surface mb-2">Create Account</h1>
-          <p className="font-body text-sm text-on-surface-variant">Join Furnix for bespoke orders</p>
+          <p className="font-body text-sm text-on-surface-variant">Join {brandName} for bespoke orders</p>
         </div>
 
         <div className="space-y-3 mb-6">
           <GoogleSignInButton onCredential={handleGoogleCredential} text="signup_with" />
+          <button
+            type="button"
+            onClick={handleWhatsAppClick}
+            className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl border-2 border-[#25D366] text-[#25D366] font-body font-semibold text-[13px] uppercase tracking-widest transition-all duration-300 hover:bg-[#25D366] hover:text-white"
+          >
+            <span className="material-symbols-outlined text-[20px]">chat</span>
+            OTP via WhatsApp
+          </button>
         </div>
+
+        <WhatsAppLoginModal 
+          isOpen={showWhatsAppModal} 
+          onClose={() => setShowWhatsAppModal(false)} 
+        />
 
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
@@ -157,7 +187,7 @@ const CustomerRegisterPage = () => {
         <div className="mt-8 flex flex-col items-center gap-4 text-sm font-body text-on-surface-variant">
           <div className="flex items-center gap-1.5 text-xs text-on-surface-variant/70 mt-2">
             <Lock size={12} />
-            <span>Secure registration • Data encrypted</span>
+            <span>Secure registration   Data encrypted</span>
           </div>
         </div>
       </div>

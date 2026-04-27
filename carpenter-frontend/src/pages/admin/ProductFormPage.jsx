@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import AdminLayout from '../../components/layout/AdminLayout'
 import { productService } from '../../services/productService'
 import { imageService } from '../../services/imageService'
 import { CATEGORIES } from '../../utils/constants'
@@ -128,318 +129,243 @@ const ProductFormPage = () => {
 
   if (fetchLoad) {
     return (
-      <div className="min-h-screen bg-background text-on-surface flex items-center justify-center">
-        <div className="text-on-surface-variant font-body">Loading product...</div>
-      </div>
+      <AdminLayout>
+        <div className="flex flex-col items-center gap-3 py-20">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="text-on-surface-variant text-sm">Loading masterpiece details...</span>
+        </div>
+      </AdminLayout>
     )
   }
 
   return (
-    <div className="bg-background text-on-surface min-h-screen flex selection:bg-primary selection:text-on-primary">
-      <aside className="h-screen w-64 fixed left-0 top-0 bg-[#f5f3ee] shadow-[40px_0_60px_-15px_rgba(27,28,25,0.04)] flex flex-col p-6 gap-2 z-50">
-        <div className="mb-8 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden shrink-0">
-            <img
-              alt="Admin Avatar"
-              className="w-full h-full object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNI2-qFyIUseGo6az5SBv3QrRJNda_XVJiAxsRM8Y1JkVvbPfNFMRkUrARjYjj9eW5bSJFKHliNy5dgI-bKTWGkn9YJAqilUp0TdwtEHky4nAQdcnmaMWOjo6xq5c9zTcHFANI6-PEd8n5BrtgV3Nuz72OO8xy6d3J2KWtczx3jUxysB24oOKyuZWfvdYSs4hq15RDD4RIIFPajIYgoSIzAHoTpTEQ7D06PoLCb1G-2NavdqN571f27ogrchbK1gjqcMvVE3M8i8k"
-            />
-          </div>
+    <AdminLayout>
+      <div className="max-w-5xl mx-auto">
+        <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
-            <h2 className="font-headline text-[#173028] font-bold text-lg leading-tight tracking-tight">Furnix Admin</h2>
-            <p className="font-body text-sm font-medium text-stone-500">Master Workshop</p>
+            <p className="premium-label mb-2">Catalog / {isEdit ? 'Refine Entry' : 'New Collection'}</p>
+            <h1 className="font-headline text-4xl lg:text-5xl text-primary tracking-tight">
+              {isEdit ? 'Edit Product' : 'Add New Piece'}
+            </h1>
           </div>
-        </div>
-
-        <nav className="flex-1 flex flex-col gap-2">
-          <button onClick={() => navigate('/admin/dashboard')} className="flex items-center gap-3 text-stone-500 px-4 py-3 hover:bg-stone-200/50 rounded-xl transition-all font-body text-sm font-medium text-left">
-            <span className="material-symbols-outlined">dashboard</span>
-            Overview
-          </button>
-          <button onClick={() => navigate('/admin/products')} className="flex items-center gap-3 bg-[#ffffff] text-[#173028] rounded-xl px-4 py-3 shadow-sm font-body text-sm font-medium text-left">
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>weekend</span>
-            Catalog
-          </button>
-          <button className="flex items-center gap-3 text-stone-500 px-4 py-3 hover:bg-stone-200/50 rounded-xl transition-all font-body text-sm font-medium text-left">
-            <span className="material-symbols-outlined">handyman</span>
-            Craftsmen
-          </button>
-          <button className="flex items-center gap-3 text-stone-500 px-4 py-3 hover:bg-stone-200/50 rounded-xl transition-all font-body text-sm font-medium text-left">
-            <span className="material-symbols-outlined">texture</span>
-            Materials
-          </button>
-          <button className="flex items-center gap-3 text-stone-500 px-4 py-3 hover:bg-stone-200/50 rounded-xl transition-all font-body text-sm font-medium text-left">
-            <span className="material-symbols-outlined">settings</span>
-            Settings
-          </button>
-        </nav>
-
-        <div className="mt-auto">
-          <button
-            onClick={() => navigate('/admin/products/new')}
-            className="w-full bg-primary text-on-primary font-body text-sm font-medium py-3 px-4 rounded-xl hover:bg-primary-container transition-colors flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined">add</span>
-            New Product
-          </button>
-        </div>
-      </aside>
-
-      <main className="ml-64 flex-1 p-12 lg:p-16 max-w-5xl mx-auto w-full">
-        <header className="mb-12 flex justify-between items-end">
-          <div>
-            <p className="font-body text-sm font-medium text-on-surface-variant mb-2 tracking-wide uppercase">
-              Catalog / New Entry
-            </p>
-            <h1 className="font-headline text-4xl lg:text-5xl text-primary tracking-tight">Add New Product</h1>
-          </div>
-          <div className="hidden sm:flex items-center gap-4">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/admin/products')}
-              className="px-6 py-3 font-body font-medium text-secondary hover:text-tertiary transition-colors"
+              className="px-6 py-3 font-body font-bold text-xs uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors"
               type="button"
             >
-              Cancel
+              Discard
             </button>
             <button
               type="submit"
               form="product-form"
               disabled={loading || uploading}
-              className="px-6 py-3 bg-primary text-on-primary font-body font-medium rounded-xl hover:bg-primary-container shadow-sm transition-colors disabled:opacity-60"
+              className="premium-btn-primary min-w-[160px]"
             >
-              {loading ? 'Saving...' : 'Save Product'}
+              {loading ? 'Saving...' : 'Publish Piece'}
             </button>
           </div>
         </header>
 
         <form id="product-form" onSubmit={handleSubmit} className="space-y-12">
-          <section className="bg-surface-container-low p-8 lg:p-10 rounded-2xl relative overflow-hidden group transition-all duration-300">
-            <div className="absolute inset-0 bg-surface-container-lowest opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] rounded-2xl z-0 pointer-events-none"></div>
-            <div className="relative z-10">
-              <h2 className="font-headline text-2xl text-primary mb-8 tracking-tight flex items-center gap-3">
-                <span className="text-secondary opacity-50">01</span> Basic Information
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="col-span-1 md:col-span-2">
-                  <label className="block font-headline text-lg text-primary mb-3" htmlFor="product-name">Product Name</label>
-                  <input
-                    id="product-name"
-                    name="product-name"
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => set('name', e.target.value)}
-                    placeholder="e.g., The Windsor Lounge Chair"
-                    className="w-full bg-surface-container-high border-none text-on-surface font-body text-base px-5 py-4 rounded-sm focus:ring-1 focus:ring-secondary focus:bg-surface-container-lowest transition-colors placeholder:text-on-surface-variant/50"
-                  />
-                  {errors.name && <p className="text-error text-sm mt-2">{errors.name}</p>}
-                </div>
+          {/* Basic Info */}
+          <section className="premium-card p-8 lg:p-10">
+            <h2 className="font-headline text-2xl text-primary mb-8 tracking-tight flex items-center gap-3">
+              <span className="text-secondary/40 italic">01</span> Essential Details
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="col-span-1 md:col-span-2">
+                <label className="premium-label">Piece Title</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => set('name', e.target.value)}
+                  placeholder="e.g., The Windsor Lounge Chair"
+                  className="premium-input"
+                />
+                {errors.name && <p className="text-error text-xs mt-2 font-medium">{errors.name}</p>}
+              </div>
 
-                <div>
-                  <label className="block font-headline text-lg text-primary mb-3" htmlFor="category">Category</label>
-                  <div className="relative">
-                    <select
-                      id="category"
-                      name="category"
-                      value={form.category}
-                      onChange={(e) => set('category', e.target.value)}
-                      className="w-full bg-surface-container-high border-none text-on-surface font-body text-base px-5 py-4 rounded-sm focus:ring-1 focus:ring-secondary focus:bg-surface-container-lowest transition-colors appearance-none pr-12"
-                    >
-                      <option value="" disabled>Select a category</option>
-                      {CATEGORIES.filter((cat) => cat.value !== 'ALL').map((cat) => (
-                        <option key={cat.value} value={cat.value}>{cat.label}</option>
-                      ))}
-                    </select>
-                    <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
-                  </div>
-                  {errors.category && <p className="text-error text-sm mt-2">{errors.category}</p>}
+              <div>
+                <label className="premium-label">Category</label>
+                <div className="relative">
+                  <select
+                    value={form.category}
+                    onChange={(e) => set('category', e.target.value)}
+                    className="premium-input appearance-none pr-12"
+                  >
+                    <option value="" disabled>Select category</option>
+                    {CATEGORIES.filter((cat) => cat.value !== 'ALL').map((cat) => (
+                      <option key={cat.value} value={cat.value}>{cat.label}</option>
+                    ))}
+                  </select>
+                  <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
                 </div>
+                {errors.category && <p className="text-error text-xs mt-2 font-medium">{errors.category}</p>}
+              </div>
 
-                <div>
-                  <label className="block font-headline text-lg text-primary mb-3" htmlFor="price">Price (USD)</label>
-                  <div className="relative">
-                    <span className="absolute left-5 top-1/2 -translate-y-1/2 text-on-surface-variant font-body">$</span>
-                    <input
-                      id="price"
-                      name="price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={form.price}
-                      onChange={(e) => set('price', e.target.value)}
-                      placeholder="0.00"
-                      className="w-full bg-surface-container-high border-none text-on-surface font-body text-base pl-10 pr-5 py-4 rounded-sm focus:ring-1 focus:ring-secondary focus:bg-surface-container-lowest transition-colors placeholder:text-on-surface-variant/50"
-                    />
-                  </div>
-                  {errors.price && <p className="text-error text-sm mt-2">{errors.price}</p>}
-                </div>
+              <div>
+                <label className="premium-label">Internal Price Reference (₹)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.price}
+                  onChange={(e) => set('price', e.target.value)}
+                  placeholder="0.00"
+                  className="premium-input"
+                />
+                {errors.price && <p className="text-error text-xs mt-2 font-medium">{errors.price}</p>}
               </div>
             </div>
           </section>
 
-          <section className="bg-surface-container-low p-8 lg:p-10 rounded-2xl relative overflow-hidden group transition-all duration-300">
-            <div className="absolute inset-0 bg-surface-container-lowest opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] rounded-2xl z-0 pointer-events-none"></div>
-            <div className="relative z-10">
-              <h2 className="font-headline text-2xl text-primary mb-8 tracking-tight flex items-center gap-3">
-                <span className="text-secondary opacity-50">02</span> Product Specifications
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <div>
-                  <label className="block font-headline text-lg text-primary mb-3" htmlFor="material">Material</label>
-                  <input
-                    id="material"
-                    type="text"
-                    value={form.material}
-                    onChange={(e) => set('material', e.target.value)}
-                    placeholder="e.g., Solid Walnut / White Oak"
-                    className="w-full bg-surface-container-high border-none text-on-surface font-body text-base px-5 py-4 rounded-sm focus:ring-1 focus:ring-secondary focus:bg-surface-container-lowest transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block font-headline text-lg text-primary mb-3" htmlFor="dimensions">Dimensions</label>
-                  <input
-                    id="dimensions"
-                    type="text"
-                    value={form.dimensions}
-                    onChange={(e) => set('dimensions', e.target.value)}
-                    placeholder="e.g., 180cm x 90cm x 75cm"
-                    className="w-full bg-surface-container-high border-none text-on-surface font-body text-base px-5 py-4 rounded-sm focus:ring-1 focus:ring-secondary focus:bg-surface-container-lowest transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block font-headline text-lg text-primary mb-3" htmlFor="leadTime">Lead Time</label>
-                  <input
-                    id="leadTime"
-                    type="text"
-                    value={form.leadTime}
-                    onChange={(e) => set('leadTime', e.target.value)}
-                    placeholder="e.g., 4-6 weeks"
-                    className="w-full bg-surface-container-high border-none text-on-surface font-body text-base px-5 py-4 rounded-sm focus:ring-1 focus:ring-secondary focus:bg-surface-container-lowest transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block font-headline text-lg text-primary mb-3" htmlFor="finishOptions">Finish Options</label>
-                  <input
-                    id="finishOptions"
-                    type="text"
-                    value={form.finishOptions}
-                    onChange={(e) => set('finishOptions', e.target.value)}
-                    placeholder="e.g., Natural Oil / Matte Lacquer"
-                    className="w-full bg-surface-container-high border-none text-on-surface font-body text-base px-5 py-4 rounded-sm focus:ring-1 focus:ring-secondary focus:bg-surface-container-lowest transition-colors"
-                  />
-                </div>
+          {/* Specifications */}
+          <section className="premium-card p-8 lg:p-10">
+            <h2 className="font-headline text-2xl text-primary mb-8 tracking-tight flex items-center gap-3">
+              <span className="text-secondary/40 italic">02</span> Material & Craft
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div>
+                <label className="premium-label">Core Material</label>
+                <input
+                  type="text"
+                  value={form.material}
+                  onChange={(e) => set('material', e.target.value)}
+                  placeholder="e.g., Solid Walnut / White Oak"
+                  className="premium-input"
+                />
               </div>
               <div>
-                <label className="block font-headline text-lg text-primary mb-3" htmlFor="description">Detailed Description</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  rows="6"
-                  value={form.description}
-                  onChange={(e) => set('description', e.target.value)}
-                  placeholder="Describe the materials, craftsmanship, and aesthetic of the piece..."
-                  className="w-full bg-surface-container-high border-none text-on-surface font-body text-base px-5 py-4 rounded-sm focus:ring-1 focus:ring-secondary focus:bg-surface-container-lowest transition-colors placeholder:text-on-surface-variant/50 resize-y"
-                ></textarea>
-                {errors.description && <p className="text-error text-sm mt-2">{errors.description}</p>}
+                <label className="premium-label">Dimensions</label>
+                <input
+                  type="text"
+                  value={form.dimensions}
+                  onChange={(e) => set('dimensions', e.target.value)}
+                  placeholder="e.g., 180cm x 90cm x 75cm"
+                  className="premium-input"
+                />
               </div>
+              <div>
+                <label className="premium-label">Estimated Lead Time</label>
+                <input
+                  type="text"
+                  value={form.leadTime}
+                  onChange={(e) => set('leadTime', e.target.value)}
+                  placeholder="e.g., 4-6 weeks"
+                  className="premium-input"
+                />
+              </div>
+              <div>
+                <label className="premium-label">Available Finishes</label>
+                <input
+                  type="text"
+                  value={form.finishOptions}
+                  onChange={(e) => set('finishOptions', e.target.value)}
+                  placeholder="e.g., Natural Oil / Matte Lacquer"
+                  className="premium-input"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="premium-label">Narrative Description</label>
+              <textarea
+                rows="6"
+                value={form.description}
+                onChange={(e) => set('description', e.target.value)}
+                placeholder="Describe the craftsmanship, jointure, and aesthetic vision..."
+                className="premium-input min-h-[150px] resize-none"
+              ></textarea>
+              {errors.description && <p className="text-error text-xs mt-2 font-medium">{errors.description}</p>}
             </div>
           </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <section className="md:col-span-2 bg-surface-container-low p-8 lg:p-10 rounded-2xl relative overflow-hidden group transition-all duration-300">
-              <div className="absolute inset-0 bg-surface-container-lowest opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] rounded-2xl z-0 pointer-events-none"></div>
-              <div className="relative z-10 h-full flex flex-col">
-                <h2 className="font-headline text-2xl text-primary mb-8 tracking-tight flex items-center gap-3">
-                  <span className="text-secondary opacity-50">03</span> Media Gallery
-                </h2>
-                <label className="flex-1 border border-dashed border-outline-variant/30 rounded-xl bg-surface-container-high/50 flex flex-col items-center justify-center p-12 text-center hover:bg-surface-container-high transition-colors cursor-pointer group/upload">
-                  <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4 group-hover/upload:bg-secondary/10 transition-colors">
-                    <span className="material-symbols-outlined text-3xl text-secondary">add_photo_alternate</span>
-                  </div>
-                  <p className="font-headline text-lg text-primary mb-2">Upload Product Photography</p>
-                  <p className="font-body text-sm text-on-surface-variant max-w-xs mx-auto">Drag and drop high-resolution images here, or click to browse. Ensure deep shadows and natural lighting.</p>
+          {/* Media & Status */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <section className="md:col-span-2 premium-card p-8">
+              <h2 className="font-headline text-2xl text-primary mb-8 tracking-tight flex items-center gap-3">
+                <span className="text-secondary/40 italic">03</span> Imagery & AR
+              </h2>
+              <div className="space-y-6">
+                <label className="block border-2 border-dashed border-outline-variant/30 rounded-2xl bg-surface-container-low/30 hover:bg-surface-container-low transition-colors cursor-pointer p-10 text-center group">
+                  {imgPreview ? (
+                    <div className="relative aspect-video max-h-48 mx-auto rounded-lg overflow-hidden shadow-md">
+                      <img src={imgPreview} alt="Preview" className="w-full h-full object-cover" />
+                      {uploading && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <span className="material-symbols-outlined text-4xl text-primary/40 group-hover:text-primary transition-colors">add_photo_alternate</span>
+                      <p className="font-body text-sm text-on-surface-variant">Upload studio photography</p>
+                    </div>
+                  )}
                   <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                 </label>
-                <div className="mt-6">
-                  <label className="block font-headline text-lg text-primary mb-3" htmlFor="arModelUrl">AR Model URL (.glb format)</label>
+
+                <div>
+                  <label className="premium-label">AR Model Link (.glb)</label>
                   <input
-                    id="arModelUrl"
-                    name="arModelUrl"
                     type="text"
                     value={form.arModelUrl}
                     onChange={(e) => set('arModelUrl', e.target.value)}
-                    placeholder="https://example.com/model.glb"
-                    className="w-full bg-surface-container-high border-none text-on-surface font-body text-base px-5 py-4 rounded-sm focus:ring-1 focus:ring-secondary focus:bg-surface-container-lowest transition-colors placeholder:text-on-surface-variant/50"
+                    placeholder="https://assets.furnix.com/models/piece.glb"
+                    className="premium-input"
                   />
-                  <p className="text-xs text-on-surface-variant mt-2">Provide a direct link to a 3D model to enable AR preview.</p>
+                  <p className="text-[10px] text-on-surface-variant mt-2 font-medium uppercase tracking-wider">Direct GLB link for AR interaction</p>
                 </div>
               </div>
             </section>
 
-            <section className="bg-surface-container-low p-8 lg:p-10 rounded-2xl relative overflow-hidden group transition-all duration-300 flex flex-col justify-between">
-              <div className="absolute inset-0 bg-surface-container-lowest opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] rounded-2xl z-0 pointer-events-none"></div>
-              <div className="relative z-10 space-y-6">
-                <h2 className="font-headline text-2xl text-primary mb-8 tracking-tight flex items-center gap-3">
-                  <span className="text-secondary opacity-50">04</span> Status
-                </h2>
-                <div className="flex items-center justify-between p-5 bg-surface-container-high rounded-xl">
-                  <div>
-                    <p className="font-headline text-lg text-primary">In Stock</p>
-                    <p className="font-body text-sm text-on-surface-variant mt-1">Available for order</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.inStock}
-                      onChange={(e) => set('inStock', e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-14 h-7 bg-outline-variant/50 peer-focus:outline-none rounded-full peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-secondary"></div>
-                  </label>
+            <section className="premium-card p-8 flex flex-col gap-6">
+              <h2 className="font-headline text-2xl text-primary mb-2 tracking-tight flex items-center gap-3">
+                <span className="text-secondary/40 italic">04</span> Visibility
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-surface-container-low rounded-xl border border-outline-variant/10">
+                  <span className="font-body text-sm font-bold text-on-surface">Available</span>
+                  <button
+                    type="button"
+                    onClick={() => set('inStock', !form.inStock)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.inStock ? 'bg-primary' : 'bg-outline-variant/50'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.inStock ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
                 </div>
-                <div className="flex items-center justify-between p-5 bg-surface-container-high rounded-xl">
-                  <div>
-                    <p className="font-headline text-lg text-primary">Publicly Visible</p>
-                    <p className="font-body text-sm text-on-surface-variant mt-1">Show on storefront</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.active}
-                      onChange={(e) => set('active', e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-14 h-7 bg-outline-variant/50 peer-focus:outline-none rounded-full peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-secondary"></div>
-                  </label>
+
+                <div className="flex items-center justify-between p-4 bg-surface-container-low rounded-xl border border-outline-variant/10">
+                  <span className="font-body text-sm font-bold text-on-surface">Public</span>
+                  <button
+                    type="button"
+                    onClick={() => set('active', !form.active)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.active ? 'bg-primary' : 'bg-outline-variant/50'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.active ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
                 </div>
+              </div>
+              
+              <div className="mt-auto bg-surface-container/50 p-4 rounded-xl border border-primary/5">
+                <p className="text-[10px] text-on-surface-variant font-medium leading-relaxed italic">
+                  Drafting a masterpiece requires patience. Ensure all details reflect the brand's commitment to quality.
+                </p>
               </div>
             </section>
           </div>
 
           {apiError && (
-            <div className="text-error bg-error-container px-4 py-3 rounded-lg font-body text-sm">
+            <div className="flex items-center gap-3 bg-error-container text-on-error-container px-4 py-3 rounded-xl font-body text-sm animate-fade-in">
+              <span className="material-symbols-outlined text-lg">error</span>
               {apiError}
             </div>
           )}
-
-          <div className="sm:hidden flex flex-col gap-4 mt-8 pt-8 border-t border-outline-variant/20">
-            <button
-              type="submit"
-              disabled={loading || uploading}
-              className="w-full px-6 py-4 bg-primary text-on-primary font-body font-medium rounded-xl hover:bg-primary-container shadow-sm transition-colors text-lg disabled:opacity-60"
-            >
-              {loading ? 'Saving...' : 'Save Product'}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/admin/products')}
-              className="w-full px-6 py-4 font-body font-medium text-secondary hover:text-tertiary transition-colors text-lg"
-            >
-              Cancel
-            </button>
-          </div>
         </form>
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   )
 }
 

@@ -2,7 +2,7 @@ package com.carpenter.controller;
 
 import com.carpenter.dto.response.ApiResponse;
 import com.carpenter.dto.response.DashboardStats;
-import com.carpenter.service.OrderService;
+import com.carpenter.service.InquiryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final OrderService orderService;
+    private final InquiryService inquiryService;
 
     /**
      * GET /api/admin/dashboard
@@ -22,13 +22,13 @@ public class AdminController {
      *
      * Returns complete dashboard statistics:
      * - Total products / Active products
-     * - Order counts by status
+     * - Inquiry counts by status
      */
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse<DashboardStats>> getDashboard(
             @AuthenticationPrincipal UserDetails userDetails) {
 
-        DashboardStats stats = orderService.getDashboardStats();
+        DashboardStats stats = inquiryService.getDashboardStats();
 
         return ResponseEntity.ok(
             ApiResponse.success(

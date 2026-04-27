@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -13,19 +13,16 @@
 
   body {
     margin: 0;
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Manrope', 'Inter', sans-serif;
     background-color: #fbf9f4;
     color: #1b1c19;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  .font-serif {
-    font-family: 'Noto Serif', serif;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Noto Serif', 'Playfair Display', serif;
+    font-weight: 700;
   }
 
   a {
@@ -35,44 +32,25 @@
 }
 
 @layer components {
-  .wood-card {
-    @apply rounded-none border border-wood-border/40 bg-wood-dark/70 backdrop-blur-sm;
+  /* Premium Design Components */
+  .premium-card {
+    @apply bg-white rounded-2xl border border-outline-variant/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden;
   }
 
-  .bronze-divider {
-    @apply h-px w-full bg-gradient-to-r from-transparent via-bronze/60 to-transparent;
+  .premium-input {
+    @apply w-full bg-surface-container-low border border-outline-variant/50 px-4 py-3 rounded-xl text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none font-body text-base transition-all placeholder:text-on-surface-variant/40;
   }
 
-  .section-title {
-    @apply font-serif text-3xl md:text-5xl text-cream;
+  .premium-btn-primary {
+    @apply inline-flex items-center justify-center bg-primary text-on-primary px-6 py-3 rounded-xl font-body font-bold text-sm uppercase tracking-widest hover:bg-primary-container hover:text-on-primary-container transition-all shadow-md active:scale-[0.98] disabled:opacity-50;
   }
 
-  .section-title span {
-    @apply text-bronze-light italic;
+  .premium-btn-outline {
+    @apply inline-flex items-center justify-center border-2 border-primary/20 bg-transparent px-6 py-3 rounded-xl font-body font-bold text-sm uppercase tracking-widest text-primary hover:bg-primary/5 transition-all active:scale-[0.98] disabled:opacity-50;
   }
 
-  .btn-bronze {
-    @apply inline-flex items-center justify-center border border-bronze bg-bronze/95 px-5 py-2.5 font-sans text-xs tracking-widest uppercase text-wood-dark transition-all hover:bg-bronze-light;
-  }
-
-  .btn-outline {
-    @apply inline-flex items-center justify-center border border-bronze/70 px-5 py-2.5 font-sans text-xs tracking-widest uppercase text-cream transition-all hover:border-bronze-light hover:text-bronze-light;
-  }
-
-  .input-field {
-    @apply w-full border border-wood-border/50 bg-wood-surface px-4 py-3 font-sans text-sm text-cream outline-none transition-all placeholder:text-cream-muted/35 focus:border-bronze;
-  }
-
-  .nav-link {
-    @apply font-sans text-xs tracking-widest uppercase text-cream-muted transition-colors hover:text-bronze-light;
-  }
-
-  .nav-link.active {
-    @apply text-bronze;
-  }
-
-  .admin-table-row {
-    @apply border-b border-wood-border/30 transition-colors hover:bg-wood-surface/40;
+  .premium-label {
+    @apply block font-body text-xs font-bold text-on-surface-variant/80 uppercase tracking-widest mb-1.5;
   }
 }
 

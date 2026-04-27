@@ -1,15 +1,27 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useSiteSettings } from '../../context/SiteSettingsContext';
 import logo from '/assets/furnix-logo.png';
-import { WHATSAPP_NUMBER } from '../../utils/constants';
+import { getWhatsAppNumber } from '../../utils/siteSettings';
+import WhatsAppLoginModal from '../auth/WhatsAppLoginModal';
 
 const Navbar = ({ rightContent }) => {
     const location = useLocation();
     const { user } = useAuth();
+    const { settings } = useSiteSettings();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+    const whatsappNumber = getWhatsAppNumber(settings);
 
-    const isActive = (path) => location.pathname === path;
+    const isActive = (path) => {
+        if (path.includes('#')) {
+            const [p, hash] = path.split('#');
+            return location.pathname === (p || '/') && location.hash === `#${hash}`;
+        }
+        if (path === '/') return location.pathname === '/' && !location.hash;
+        return location.pathname.startsWith(path);
+    };
 
     const initials = (user?.fullName || user?.username || 'U')
         .split(' ')
@@ -20,7 +32,7 @@ const Navbar = ({ rightContent }) => {
 
     useEffect(() => {
         setMobileOpen(false);
-    }, [location.pathname]);
+    }, [location.pathname, location.hash]);
 
     useEffect(() => {
         if (mobileOpen) {
@@ -33,13 +45,20 @@ const Navbar = ({ rightContent }) => {
         };
     }, [mobileOpen]);
 
+    const handleWhatsAppClick = (e) => {
+        if (!user) {
+            e.preventDefault();
+            setShowWhatsAppModal(true);
+        }
+    };
+
     return (
         <>
             <nav className="fixed top-0 w-full z-50 bg-surface/95 backdrop-blur-xl border-b border-outline-variant/10 shadow-sm transition-all duration-300">
                 <div className="flex justify-between items-center w-full px-4 md:px-8 py-3 md:py-4 max-w-screen-2xl mx-auto">
                     {/* Left: Brand - Increased Size */}
                     <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-300">
-                        <img src={logo} alt="Furnix" className="h-20                     md:h-25 w-auto object-contain" />
+                        <img src={logo} alt="Furnix" className="h-20 md:h-25 w-auto object-contain" />
                     </Link>
 
                     {/* Center: Primary Links */}
@@ -52,14 +71,18 @@ const Navbar = ({ rightContent }) => {
                                     : 'text-on-surface-variant hover:text-primary'
                             }`}
                         >
-                            Shop
+                            Gallery
                         </Link>
-                        <a
-                            href="/#bestsellers"
-                            className="text-on-surface-variant hover:text-primary transition-colors duration-300"
+                        <Link
+                            to="/#collection"
+                            className={`transition-colors duration-300 ${
+                                isActive('/#collection')
+                                    ? 'text-primary border-b-2 border-primary pb-1'
+                                    : 'text-on-surface-variant hover:text-primary'
+                            }`}
                         >
-                            Bestsellers
-                        </a>
+                            Collection
+                        </Link>
 
                         <Link
                             to="/track-order"
@@ -76,7 +99,7 @@ const Navbar = ({ rightContent }) => {
                             to="/order"
                             className={`rounded-full px-6 py-2.5 transition-all duration-300 transform hover:scale-105 active:scale-95 ${
                                 isActive('/order')
-                                    ? 'bg-primary text-on-primary shadow-xl shadow-primary/30'
+                                    ? 'bg-primary text-on-primary shadow-xl shadow-primary/40 ring-2 ring-primary/50 ring-offset-2'
                                     : 'bg-primary text-on-primary shadow-lg shadow-primary/20 hover:shadow-xl'
                             }`}
                         >
@@ -99,12 +122,13 @@ const Navbar = ({ rightContent }) => {
                     <div className="flex items-center gap-5 text-on-surface">
                         {/* WhatsApp - Original Green Color */}
                         <a
-                            href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                            target="_blank"
-                            rel="noreferrer"
+                            href={user ? `https://wa.me/${whatsappNumber}` : '#'}
+                            target={user ? "_blank" : undefined}
+                            rel={user ? "noreferrer" : undefined}
+                            onClick={handleWhatsAppClick}
                             className="hidden md:inline-flex items-center rounded-full border-2 border-[#25D366] px-5 py-2 text-[12px] font-extrabold uppercase tracking-widest text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
                         >
-                            WhatsApp
+                            WhatsApp {user ? 'Chat' : 'Login'}
                         </a>
                         {rightContent}
                         {user ? (
@@ -170,31 +194,59 @@ const Navbar = ({ rightContent }) => {
                             </button>
                         </div>
 
-                        <div className="flex flex-col gap-8 font-body text-3xl font-light text-primary">
-                            <Link to="/gallery" className="hover:pl-4 transition-all duration-300">Shop</Link>
-                            <a href="/#bestsellers" onClick={() => setMobileOpen(false)} className="hover:pl-4 transition-all duration-300">Bestsellers</a>
-                            <Link to="/track-order" className="hover:pl-4 transition-all duration-300">Track Order</Link>
-                            <Link to="/contact" className="hover:pl-4 transition-all duration-300">Contact</Link>
+                        <div className="flex flex-col gap-8 font-body text-3xl font-light">
+                            <Link 
+                                to="/gallery" 
+                                className={`transition-all duration-300 ${isActive('/gallery') ? 'text-primary pl-4 font-normal' : 'text-primary/60 hover:pl-4'}`}
+                            >
+                                Gallery
+                            </Link>
+                            <Link 
+                                to="/#collection" 
+                                onClick={() => setMobileOpen(false)} 
+                                className={`transition-all duration-300 ${isActive('/#collection') ? 'text-primary pl-4 font-normal' : 'text-primary/60 hover:pl-4'}`}
+                            >
+                                Collection
+                            </Link>
+                            <Link 
+                                to="/track-order" 
+                                className={`transition-all duration-300 ${isActive('/track-order') ? 'text-primary pl-4 font-normal' : 'text-primary/60 hover:pl-4'}`}
+                            >
+                                Track Order
+                            </Link>
+                            <Link 
+                                to="/contact" 
+                                className={`transition-all duration-300 ${isActive('/contact') ? 'text-primary pl-4 font-normal' : 'text-primary/60 hover:pl-4'}`}
+                            >
+                                Contact
+                            </Link>
                         </div>
 
                         <div className="mt-auto flex flex-col gap-4">
                             <Link
                                 to="/order"
-                                className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-4 text-sm font-bold uppercase tracking-widest text-on-primary shadow-xl"
+                                className={`inline-flex items-center justify-center rounded-full bg-primary px-6 py-4 text-sm font-bold uppercase tracking-widest text-on-primary shadow-xl transition-all duration-300 ${
+                                    isActive('/order') ? 'ring-4 ring-primary/30 scale-105' : ''
+                                }`}
                             >
                                 Custom Order
                             </Link>
                             <a
-                                href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                                target="_blank"
-                                rel="noreferrer"
+                                href={user ? `https://wa.me/${whatsappNumber}` : '#'}
+                                target={user ? "_blank" : undefined}
+                                rel={user ? "noreferrer" : undefined}
+                                onClick={handleWhatsAppClick}
                                 className="inline-flex items-center justify-center rounded-full border-2 border-[#25D366] px-6 py-4 text-sm font-bold uppercase tracking-widest text-[#25D366] shadow-md"
                             >
-                                WhatsApp
+                                WhatsApp {user ? 'Chat' : 'Login'}
                             </a>
                         </div>
                     </div>
                 </div>
+                <WhatsAppLoginModal 
+                    isOpen={showWhatsAppModal} 
+                    onClose={() => setShowWhatsAppModal(false)} 
+                />
             </nav>
             {/* Spacer */}
             <div className="h-24 md:h-32" />

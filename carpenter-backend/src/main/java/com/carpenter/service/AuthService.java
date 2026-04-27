@@ -123,8 +123,9 @@ public class AuthService {
     }
 
     @Transactional
-    public CurrentUserResponse updateProfile(String username, com.carpenter.dto.request.UpdateProfileRequest request) {
-        Customer customer = customerRepository.findByEmail(username)
+    public CurrentUserResponse updateProfile(String identifier, com.carpenter.dto.request.UpdateProfileRequest request) {
+        Customer customer = customerRepository.findByEmail(identifier)
+                .or(() -> customerRepository.findByPhone(identifier))
                 .orElseThrow(() -> new ResourceNotFoundException("User", null));
 
         if (request.getFullName() != null) {
@@ -138,13 +139,13 @@ public class AuthService {
         }
 
         customerRepository.save(customer);
-        log.info("Profile updated for user: {}", username);
-        return getCurrentUser(username);
+        log.info("Profile updated for user: {}", identifier);
+        return getCurrentUser(identifier);
     }
 
     @Transactional(readOnly = true)
-    public CurrentUserResponse getCurrentUser(String username) {
-        Admin admin = adminRepository.findByUsername(username).orElse(null);
+    public CurrentUserResponse getCurrentUser(String identifier) {
+        Admin admin = adminRepository.findByUsername(identifier).orElse(null);
         if (admin != null) {
             return CurrentUserResponse.builder()
                     .username(admin.getUsername())
@@ -154,11 +155,12 @@ public class AuthService {
                     .build();
         }
 
-        Customer customer = customerRepository.findByEmail(username)
+        Customer customer = customerRepository.findByEmail(identifier)
+                .or(() -> customerRepository.findByPhone(identifier))
                 .orElseThrow(() -> new ResourceNotFoundException("User", null));
 
         return CurrentUserResponse.builder()
-                .username(customer.getEmail())
+                .username(customer.getEmail() != null ? customer.getEmail() : customer.getPhone())
                 .role(customer.getRole())
                 .fullName(customer.getFullName())
                 .profilePicture(customer.getProfilePicture())
@@ -167,8 +169,8 @@ public class AuthService {
     }
 
     @Transactional(readOnly = true)
-    public AuthResponse buildAuthResponse(String username, String accessToken) {
-        CurrentUserResponse currentUser = getCurrentUser(username);
+    public AuthResponse buildAuthResponse(String identifier, String accessToken) {
+        CurrentUserResponse currentUser = getCurrentUser(identifier);
         return AuthResponse.builder()
                 .token(accessToken)
                 .tokenType("Bearer")
@@ -178,6 +180,19 @@ public class AuthService {
                 .fullName(currentUser.getFullName())
                 .profilePicture(currentUser.getProfilePicture())
                 .provider(currentUser.getProvider())
+                .build();
+    }
+
+    public AuthResponse buildAuthResponseFromCustomer(Customer customer, String accessToken) {
+        return AuthResponse.builder()
+                .token(accessToken)
+                .tokenType("Bearer")
+                .username(customer.getEmail() != null ? customer.getEmail() : customer.getPhone())
+                .role(customer.getRole())
+                .expiresIn(jwtUtils.getExpirationSeconds())
+                .fullName(customer.getFullName())
+                .profilePicture(customer.getProfilePicture())
+                .provider(customer.getProvider() != null ? customer.getProvider().name() : AuthProvider.LOCAL.name())
                 .build();
     }
 
@@ -241,10 +256,11 @@ public class AuthService {
             return customerRepository.save(created);
         }
 
-        if (customer.getProvider() == AuthProvider.GOOGLE
-                && StringUtils.hasText(customer.getProviderId())
+        if (customer.getProvider() == AuthProvider.GOOGLE 
+                && StringUtils.hasText(customer.getProviderId()) 
                 && !customer.getProviderId().equals(profile.subject())) {
-            throw new BadRequestException("Google account mismatch for this email");
+            log.warn("Google providerId mismatch for email {}. Updating from {} to {}", 
+                    customer.getEmail(), customer.getProviderId(), profile.subject());
         }
 
         if (customer.getProvider() != AuthProvider.GOOGLE) {

@@ -60,7 +60,7 @@ export default {
         'primary': '#173028',
         'inverse-surface': '#30312e',
         'on-error-container': '#93000a',
-        'on-surface-variant': '#424845',
+        'on-surface-variant': '#2f3633',
         'error-container': '#ffdad6',
         'tertiary': '#3b2713',
         'on-secondary': '#ffffff',

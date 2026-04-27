@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { productService } from '../../services/productService'
-import { formatPrice, buildWhatsAppUrl } from '../../utils/helpers'
-import { WHATSAPP_NUMBER } from '../../utils/constants'
+import { buildWhatsAppUrl } from '../../utils/helpers'
+import { useSiteSettings } from '../../context/SiteSettingsContext'
+import { getWhatsAppNumber } from '../../utils/siteSettings'
 import { wishlistService } from '../../services/wishlistService'
 import Spinner from '../../components/ui/Spinner'
 import { toast } from 'react-hot-toast'
@@ -14,6 +15,8 @@ const ProductDetailPage = () => {
   const [related, setRelated] = useState([])
   const [loading, setLoading] = useState(true)
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const { settings } = useSiteSettings()
+  const whatsappNumber = getWhatsAppNumber(settings)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -111,8 +114,8 @@ const ProductDetailPage = () => {
                 Built for daily use. Designed to last.
               </p>
               <div className="flex items-center justify-between gap-4 mb-6">
-                <p className="font-body text-2xl text-[#855a3c]">
-                  {formatPrice(product.price)}
+                <p className="font-body text-sm text-on-surface-variant uppercase tracking-[0.2em]">
+                  Bespoke Handcrafted Piece
                 </p>
                 <button 
                   onClick={() => {
@@ -166,12 +169,12 @@ const ProductDetailPage = () => {
               </div>
 
               <div className="flex flex-col gap-4 mb-10">
-                <a href={buildWhatsAppUrl(WHATSAPP_NUMBER, product.name)} target="_blank" rel="noreferrer" className="w-full bg-[#1a362d] hover:bg-[#122620] text-white py-4 rounded-lg flex items-center justify-center gap-3 transition-colors text-sm font-semibold tracking-wide">
+                <a href={buildWhatsAppUrl(whatsappNumber, product.name)} target="_blank" rel="noreferrer" className="w-full bg-[#1a362d] hover:bg-[#122620] text-white py-4 rounded-lg flex items-center justify-center gap-3 transition-colors text-sm font-semibold tracking-wide">
                   Inquire via WhatsApp
                   <span className="material-symbols-outlined text-[18px]">chat</span>
                 </a>
                 <Link to="/order" className="w-full bg-[#855a3c] hover:bg-[#6b4a31] text-white py-4 rounded-lg flex items-center justify-center gap-3 transition-colors text-sm font-semibold tracking-wide">
-                  Request Customization →
+                  Request Customization <span aria-hidden="true">&rarr;</span>
                 </Link>
               </div>
 
@@ -205,7 +208,7 @@ const ProductDetailPage = () => {
                   </div>
                   <div className="w-full text-center">
                     <h3 className="font-headline text-xl text-on-surface mb-2 group-hover:text-[#855a3c] transition-colors">{p.name}</h3>
-                    <p className="text-[#855a3c]">{formatPrice(p.price)}</p>
+                    <p className="text-on-surface-variant text-xs uppercase tracking-widest">{p.category || 'Collection'}</p>
                   </div>
                 </Link>
               ))}

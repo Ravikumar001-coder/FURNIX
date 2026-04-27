@@ -69,7 +69,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .setAuthentication(authentication);
             }
         } catch (Exception e) {
-            log.error("Cannot set admin authentication: {}", e.getMessage());
+            log.error("Failed to set authentication for identifier [{}]: {}", 
+                jwtUtils.validateToken(extractToken(request)) ? jwtUtils.extractUsername(extractToken(request)) : "unknown", 
+                e.getMessage());
         }
 
         // 7. Always continue the filter chain

@@ -54,15 +54,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**", "/api/v2/products/**").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/orders", "/api/v2/orders").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/inquiries").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/inquiries", "/api/v2/inquiries").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/settings", "/api/v1/settings").permitAll()
 
                         .requestMatchers(HttpMethod.GET,
-                                "/api/orders/my-orders",
-                                "/api/v1/orders/my-orders",
-                                "/api/v2/orders/my-orders").hasAuthority("ROLE_USER")
+                                "/api/inquiries/my-inquiries", "/api/inquiries/my-inquiries/**",
+                                "/api/v1/inquiries/my-inquiries", "/api/v1/inquiries/my-inquiries/**",
+                                "/api/v2/inquiries/my-inquiries", "/api/v2/inquiries/my-inquiries/**").hasAuthority("ROLE_USER")
 
                         .requestMatchers(HttpMethod.POST, "/api/products", "/api/products/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/products", "/api/products/**").hasAuthority("ROLE_ADMIN")
@@ -82,14 +82,24 @@ public class SecurityConfig {
                                 "/api/v1/products", "/api/v1/products/**",
                                 "/api/v2/products", "/api/v2/products/**").hasAuthority("ROLE_ADMIN")
 
-                        .requestMatchers("/api/orders", "/api/orders/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/inquiries", "/api/inquiries/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/images", "/api/images/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/admin", "/api/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/settings", "/api/v1/settings").hasAuthority("ROLE_ADMIN")
 
-                        .requestMatchers("/api/v1/orders", "/api/v1/orders/**", "/api/v2/orders", "/api/v2/orders/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/v1/inquiries", "/api/v1/inquiries/**", "/api/v2/inquiries", "/api/v2/inquiries/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/v1/images", "/api/v1/images/**", "/api/v2/images", "/api/v2/images/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/v1/admin", "/api/v1/admin/**", "/api/v2/admin", "/api/v2/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/quotes", "/api/quotes/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/quotes", "/api/quotes/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/quotes", "/api/quotes/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/api/quotes", "/api/quotes/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/projects", "/api/projects/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/projects", "/api/projects/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/gallery", "/api/gallery/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/gallery", "/api/gallery/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/gallery", "/api/gallery/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/gallery", "/api/gallery/**").hasAuthority("ROLE_ADMIN")
 
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

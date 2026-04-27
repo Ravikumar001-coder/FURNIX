@@ -1,48 +1,56 @@
-import { useState, useEffect } from 'react'
-import api from '../../services/api'
+import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import AdminLayout from '../../components/layout/AdminLayout'
+import { useSiteSettings } from '../../context/SiteSettingsContext'
+import { DEFAULT_SITE_SETTINGS, SETTINGS_FORM_SECTIONS } from '../../utils/siteSettings'
+
+const renderField = (field, value, onChange) => {
+  if (field.type === 'textarea') {
+    return (
+      <textarea
+        name={field.key}
+        value={value}
+        onChange={onChange}
+        className="w-full bg-surface-container-high border-none rounded px-4 py-2 focus:ring-2 focus:ring-primary outline-none min-h-[92px] resize-y"
+      />
+    )
+  }
+
+  return (
+    <input
+      type={field.type || 'text'}
+      name={field.key}
+      value={value}
+      onChange={onChange}
+      className="w-full bg-surface-container-high border-none rounded px-4 py-2 focus:ring-2 focus:ring-primary outline-none"
+    />
+  )
+}
 
 const SettingsPage = () => {
-  const [settings, setSettings] = useState({
-    'hero.title': '',
-    'hero.subtitle': '',
-    'contact.phone': '',
-    'contact.email': '',
-    'seo.description': ''
-  })
-  const [loading, setLoading] = useState(true)
+  const { settings, loading, saveSettings } = useSiteSettings()
+  const [formSettings, setFormSettings] = useState(DEFAULT_SITE_SETTINGS)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    fetchSettings()
-  }, [])
-
-  const fetchSettings = async () => {
-    try {
-      const { data } = await api.get('/settings')
-      if (data.data && Object.keys(data.data).length > 0) {
-        setSettings(prev => ({ ...prev, ...data.data }))
-      }
-    } catch (error) {
-      toast.error('Failed to load settings')
-    } finally {
-      setLoading(false)
-    }
-  }
+    setFormSettings(prev => ({ ...prev, ...settings }))
+  }, [settings])
 
   const handleChange = (e) => {
-    setSettings(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    setFormSettings(prev => ({ ...prev, [name]: value }))
   }
 
   const handleSave = async (e) => {
     e.preventDefault()
     setSaving(true)
     try {
-      await api.put('/settings', settings)
+      const saved = await saveSettings(formSettings)
+      setFormSettings(saved)
       toast.success('Settings saved successfully')
     } catch (error) {
-      toast.error('Failed to save settings')
+      const message = error.response?.data?.message || 'Failed to save settings'
+      toast.error(message)
     } finally {
       setSaving(false)
     }
@@ -50,89 +58,38 @@ const SettingsPage = () => {
 
   return (
     <AdminLayout>
-      <div className="max-w-3xl">
+      <div className="max-w-5xl">
         <div className="mb-8">
-          <h1 className="font-headline text-3xl font-bold text-on-surface mb-2">CMS Settings</h1>
-          <p className="font-body text-on-surface-variant">Update public-facing website content dynamically.</p>
+          <h1 className="font-headline text-3xl font-bold text-on-surface mb-2">Settings and CMS</h1>
+          <p className="font-body text-on-surface-variant">
+            Manage brand, contact, business profile, social proof, and SEO metadata from one place.
+          </p>
         </div>
 
         {loading ? (
-          <div className="animate-pulse bg-surface-container-low h-96 rounded-2xl"></div>
+          <div className="animate-pulse bg-surface-container-low h-96 rounded-2xl" />
         ) : (
           <form onSubmit={handleSave} className="space-y-8 bg-surface-container-low p-8 rounded-2xl border border-outline-variant/20">
-            
-            {/* Homepage Section */}
-            <div>
-              <h2 className="font-headline text-xl text-primary mb-4 border-b border-outline-variant/30 pb-2">Homepage content</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-1">Hero Title</label>
-                  <input 
-                    type="text" 
-                    name="hero.title" 
-                    value={settings['hero.title']} 
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-high border-none rounded px-4 py-2 focus:ring-2 focus:ring-primary outline-none"
-                    placeholder="E.g., Handcrafted Excellence"
-                  />
+            {SETTINGS_FORM_SECTIONS.map((section) => (
+              <section key={section.title}>
+                <h2 className="font-headline text-xl text-primary mb-4 border-b border-outline-variant/30 pb-2">
+                  {section.title}
+                </h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {section.fields.map((field) => (
+                    <div key={field.key} className={field.type === 'textarea' ? 'md:col-span-2' : ''}>
+                      <label className="block text-sm font-medium text-on-surface mb-1">{field.label}</label>
+                      {renderField(field, formSettings[field.key] || '', handleChange)}
+                      <p className="mt-1 text-[11px] text-on-surface-variant">{field.key}</p>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-1">Hero Subtitle</label>
-                  <textarea 
-                    name="hero.subtitle" 
-                    value={settings['hero.subtitle']} 
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-high border-none rounded px-4 py-2 focus:ring-2 focus:ring-primary outline-none h-24 resize-none"
-                    placeholder="E.g., Discover bespoke furniture tailored to your space."
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Section */}
-            <div>
-              <h2 className="font-headline text-xl text-primary mb-4 border-b border-outline-variant/30 pb-2">Contact Details</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-1">Support Phone</label>
-                  <input 
-                    type="text" 
-                    name="contact.phone" 
-                    value={settings['contact.phone']} 
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-high border-none rounded px-4 py-2 focus:ring-2 focus:ring-primary outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-1">Support Email</label>
-                  <input 
-                    type="email" 
-                    name="contact.email" 
-                    value={settings['contact.email']} 
-                    onChange={handleChange}
-                    className="w-full bg-surface-container-high border-none rounded px-4 py-2 focus:ring-2 focus:ring-primary outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* SEO Section */}
-            <div>
-              <h2 className="font-headline text-xl text-primary mb-4 border-b border-outline-variant/30 pb-2">SEO Metadata</h2>
-              <div>
-                <label className="block text-sm font-medium text-on-surface mb-1">Global Meta Description</label>
-                <textarea 
-                  name="seo.description" 
-                  value={settings['seo.description']} 
-                  onChange={handleChange}
-                  className="w-full bg-surface-container-high border-none rounded px-4 py-2 focus:ring-2 focus:ring-primary outline-none h-20 resize-none"
-                />
-              </div>
-            </div>
+              </section>
+            ))}
 
             <div className="flex justify-end pt-4 border-t border-outline-variant/30">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={saving}
                 className="bg-primary text-on-primary px-6 py-2 rounded font-medium hover:bg-primary-container transition-colors disabled:opacity-50"
               >

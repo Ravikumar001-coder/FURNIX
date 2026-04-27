@@ -2,7 +2,7 @@
 export const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:8081/api'
+  'http://localhost:8080/api'
 
 // ── Categories ───────────────────────────────────────
 export const CATEGORIES = [
@@ -124,11 +124,17 @@ export const FURNITURE_TYPES = [
 
 // ── Order Statuses ───────────────────────────────────
 export const ORDER_STATUSES = [
-  { value: 'PENDING',     label: 'PEND', color: '#D4A017', full: 'Pending' },
-  { value: 'CONFIRMED',   label: 'CONF', color: '#4A90D9', full: 'Confirmed' },
-  { value: 'IN_PROGRESS', label: 'PROG', color: '#E07B39', full: 'In Progress' },
-  { value: 'COMPLETED',   label: 'DONE', color: '#5BA85A', full: 'Completed' },
-  { value: 'CANCELLED',   label: 'CANC', color: '#C0392B', full: 'Cancelled' },
+  { value: 'NEW',                label: 'NEW',   color: '#D4A017', full: 'New Inquiry' },
+  { value: 'UNDER_REVIEW',       label: 'REVW',  color: '#4A90D9', full: 'Under Review' },
+  { value: 'QUOTE_SENT',         label: 'QUOTE', color: '#3498DB', full: 'Quote Sent' },
+  { value: 'NEGOTIATION',        label: 'NEGO',  color: '#9B59B6', full: 'Negotiation' },
+  { value: 'ACCEPTED',           label: 'ACPT',  color: '#2ECC71', full: 'Accepted' },
+  { value: 'REJECTED',           label: 'REJ',   color: '#E74C3C', full: 'Rejected' },
+  { value: 'SITE_VISIT_SCHEDULED',label: 'VISIT', color: '#8E44AD', full: 'Site Visit Scheduled' },
+  { value: 'IN_PRODUCTION',      label: 'PROD',  color: '#E67E22', full: 'In Production' },
+  { value: 'READY_FOR_DELIVERY', label: 'READY', color: '#1ABC9C', full: 'Ready for Delivery' },
+  { value: 'DELIVERED',          label: 'DELV',  color: '#27AE60', full: 'Delivered' },
+  { value: 'CLOSED',             label: 'CLOSE', color: '#95A5A6', full: 'Closed' },
 ]
 
 import { BUSINESS_DATA } from './businessData'

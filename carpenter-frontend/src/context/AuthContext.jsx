@@ -71,6 +71,17 @@ export const AuthProvider = ({ children }) => {
     return data
   }
 
+  const whatsappRequestOtp = async (phoneNumber) => {
+    return await authService.whatsappRequestOtp(phoneNumber)
+  }
+
+  const whatsappVerifyOtp = async (phoneNumber, code) => {
+    const data = await authService.whatsappVerifyOtp(phoneNumber, code)
+    const nextUser = await authService.fetchCurrentUser().catch(() => toUser(data))
+    setUser(nextUser)
+    return data
+  }
+
   const logout = async () => {
     await authService.logout()
     setUser(null)
@@ -90,6 +101,8 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         googleLogin,
+        whatsappRequestOtp,
+        whatsappVerifyOtp,
         logout,
         updateProfile,
         loading,

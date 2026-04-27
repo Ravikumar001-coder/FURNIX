@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { Loader2 } from 'lucide-react'
+import logo from '/assets/furnix-logo.png'
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('')
@@ -34,7 +35,7 @@ const ForgotPasswordPage = () => {
   return (
     <div className="pt-24 pb-20 px-4 min-h-screen flex flex-col items-center justify-center bg-surface-container-lowest">
       <Link to="/" className="mb-8 block">
-        <h2 className="font-headline italic text-primary text-4xl tracking-tight text-center">Furnix</h2>
+        <img src={logo} alt="Furnix" className="h-20 md:h-25 w-auto object-contain mx-auto" />
       </Link>
 
       <div className="w-full max-w-[440px] bg-surface-container-lowest border border-outline-variant/30 p-8 sm:p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)]">

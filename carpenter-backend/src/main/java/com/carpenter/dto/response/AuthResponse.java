@@ -11,6 +11,7 @@ import lombok.*;
 public class AuthResponse {
     @Schema(example = "eyJhbGciOiJIUzI1NiJ9...")
     private String token;
+    @Builder.Default
     @Schema(example = "Bearer")
     private String tokenType = "Bearer";
     @Schema(example = "admin")

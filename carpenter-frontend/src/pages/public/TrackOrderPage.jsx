@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BUSINESS_DATA } from '../../utils/businessData'
+import { useSiteSettings } from '../../context/SiteSettingsContext'
+import { getWhatsAppNumber } from '../../utils/siteSettings'
 
 const TrackOrderPage = () => {
   const [orderRef, setOrderRef] = useState('')
+  const { settings } = useSiteSettings()
+  const whatsappNumber = getWhatsAppNumber(settings)
 
   return (
     <>
@@ -35,7 +38,7 @@ const TrackOrderPage = () => {
             />
 
             <a
-              href={`https://wa.me/${BUSINESS_DATA.contact.whatsapp}?text=${encodeURIComponent(`Hi Furnix, I want to track my order: ${orderRef || '[enter order id]'}`)}`}
+              href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hi Furnix, I want to track my order: ${orderRef || '[enter order id]'}`)}`}
               target="_blank"
               rel="noreferrer"
               className="mt-5 inline-flex items-center justify-center gap-2 w-full rounded-xl bg-primary px-6 py-3 text-on-primary font-semibold tracking-wide hover:bg-primary-container hover:text-on-primary-container transition-colors"

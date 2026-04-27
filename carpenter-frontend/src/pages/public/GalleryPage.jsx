@@ -1,324 +1,500 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { productService } from '../../services/productService';
-import {
-    SHOP_CATEGORY_TREE,
-    SHOP_PRIMARY_CATEGORIES,
-    SHOP_SUBCATEGORIES,
-    SHOP_SUBCATEGORY_MAP,
-} from '../../utils/constants';
-import { wishlistService } from '../../services/wishlistService';
-import { toast } from 'react-hot-toast';
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { Link } from 'react-router-dom'
+import { galleryService } from '../../services/galleryService'
+import { X, SlidersHorizontal, ArrowUpRight, ChevronDown } from 'lucide-react'
 
-const GalleryPage = () => {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [primaryCategory, setPrimaryCategory] = useState('ALL');
-    const [subcategory, setSubcategory] = useState('ALL');
-    const [search, setSearch] = useState('');
-    const [searching, setSearching] = useState(false);
-    const [materials, setMaterials] = useState({
-        oak: false,
-        walnut: false,
-        pine: false
-    });
-    const [maxPrice, setMaxPrice] = useState(100000);
-    const [wishlistIds, setWishlistIds] = useState([]);
+// ─── Filter Config ───────────────────────────────────────────
+const CATEGORIES = [
+  { value: '', label: 'All Categories' },
+  { value: 'SEATING',   label: 'Seating' },
+  { value: 'TABLES',    label: 'Tables & Desks' },
+  { value: 'STORAGE',   label: 'Storage & Wardrobes' },
+  { value: 'BEDS',      label: 'Beds & Frames' },
+  { value: 'DOORS',     label: 'Doors & Panels' },
+  { value: 'KITCHEN',   label: 'Kitchen & Modular' },
+  { value: 'DECOR',     label: 'Décor & Accents' },
+  { value: 'OUTDOOR',   label: 'Outdoor' },
+]
 
-    useEffect(() => {
-        setWishlistIds(wishlistService.get().map(p => p.id));
-    }, []);
+const ROOM_TYPES = [
+  { value: '', label: 'All Rooms' },
+  { value: 'LIVING_ROOM',  label: 'Living Room' },
+  { value: 'BEDROOM',      label: 'Bedroom' },
+  { value: 'DINING_ROOM',  label: 'Dining Room' },
+  { value: 'HOME_OFFICE',  label: 'Home Office' },
+  { value: 'KITCHEN',      label: 'Kitchen' },
+  { value: 'BATHROOM',     label: 'Bathroom' },
+  { value: 'OUTDOOR',      label: 'Outdoor / Garden' },
+]
 
-    const loadAllProducts = async () => {
-        setLoading(true);
-        try {
-            const data = await productService.getAll(null, null, 0, 100);
-            setProducts(Array.isArray(data) ? data : (data.content || []));
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
+const MATERIALS = [
+  'Teak', 'Rosewood', 'Walnut', 'Oak', 'Pine',
+  'Bamboo', 'Reclaimed Wood', 'MDF', 'Brass Hardware'
+]
 
-    useEffect(() => {
-        loadAllProducts();
-    }, []);
+// ─── Masonry Grid Component ───────────────────────────────────
+const MasonryGrid = ({ items, onItemClick }) => {
+  // Distribute items into 3 columns
+  const col1 = items.filter((_, i) => i % 3 === 0)
+  const col2 = items.filter((_, i) => i % 3 === 1)
+  const col3 = items.filter((_, i) => i % 3 === 2)
 
-    useEffect(() => {
-        if (!search.trim()) {
-            loadAllProducts();
-            return;
-        }
-
-        const timer = setTimeout(async () => {
-            setSearching(true);
-            try {
-                const data = await productService.search(search);
-                setProducts(Array.isArray(data) ? data : (data.content || []));
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setSearching(false);
-            }
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [search]);
-
-    useEffect(() => {
-        setSubcategory('ALL');
-    }, [primaryCategory]);
-
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 0,
-        }).format(amount);
-    };
-
-    const getOffsetClass = (idx) => {
-        switch (idx % 6) {
-            case 0: return '';
-            case 1: return 'md:mt-12';
-            case 2: return 'xl:mt-24';
-            case 3: return '';
-            case 4: return 'md:mt-12 xl:mt-0';
-            case 5: return 'xl:mt-12';
-            default: return '';
-        }
-    };
-
-    const handleMaterialToggle = (material) => {
-        setMaterials(prev => ({ ...prev, [material]: !prev[material] }));
-    };
-
-    const matchSubcategory = (product, subcategoryItem) => {
-        if (!subcategoryItem) return true;
-
-        const haystack = [product.name, product.description, product.material]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase();
-
-        const backendMatch = product.category === subcategoryItem.backendCategory;
-        const keywordMatch = subcategoryItem.keywords.some((keyword) => haystack.includes(keyword));
-        return backendMatch || keywordMatch;
-    };
-
-    // Client-side filtering for materials and price
-    const filteredProducts = products.filter(p => {
-        // Price check
-        if (p.price > maxPrice) return false;
-
-        // Primary category check
-        if (primaryCategory !== 'ALL') {
-            const selectedPrimary = SHOP_CATEGORY_TREE.find((item) => item.value === primaryCategory);
-            if (!selectedPrimary) return false;
-            const primaryMatch = selectedPrimary.subcategories.some((sub) => matchSubcategory(p, sub));
-            if (!primaryMatch) return false;
-        }
-
-        // Subcategory check
-        if (subcategory !== 'ALL') {
-            const selectedSub = SHOP_SUBCATEGORY_MAP[subcategory];
-            if (!matchSubcategory(p, selectedSub)) return false;
-        }
-
-        // Material check
-        const anyMaterialSelected = materials.oak || materials.walnut || materials.pine;
-        if (!anyMaterialSelected) return true; // No material filter active
-
-        const mat = (p.material || '').toLowerCase();
-        if (materials.oak && mat.includes('oak')) return true;
-        if (materials.walnut && mat.includes('walnut')) return true;
-        if (materials.pine && mat.includes('pine')) return true;
-
-        return false;
-    });
+  const GalleryCard = ({ item, index }) => {
+    const isTall = index % 4 === 1 || index % 4 === 3
 
     return (
-        <>
-            <main className="flex-grow max-w-screen-2xl mx-auto w-full px-4 md:px-8 py-8 md:py-12 flex flex-col md:flex-row gap-10 lg:gap-24 relative">
-                <aside className="w-full md:w-64 flex-shrink-0 flex flex-col gap-8 md:gap-10 md:sticky md:top-32 h-fit">
-                    <div className="mb-4 md:hidden">
-                        <div className="flex items-center bg-surface-container-high rounded-full px-4 py-2">
-                            <span className="material-symbols-outlined text-outline mr-2 text-sm">search</span>
-                            <input 
-                                className="bg-transparent border-none focus:ring-0 text-sm font-label text-on-surface placeholder-outline-variant w-full" 
-                                placeholder="Search gallery..." 
-                                type="text"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="font-headline text-lg text-primary mb-4 tracking-wide uppercase">Category</h3>
-                        <div className="space-y-3">
-                            <div>
-                                <label className="text-xs uppercase tracking-widest text-on-surface-variant mb-2 block">Primary Category</label>
-                                <select
-                                    value={primaryCategory}
-                                    onChange={(e) => setPrimaryCategory(e.target.value)}
-                                    className="w-full bg-surface-container-high border border-outline-variant/30 rounded-lg px-3 py-2 text-sm text-on-surface"
-                                >
-                                    {SHOP_PRIMARY_CATEGORIES.map((categoryOption) => (
-                                        <option key={categoryOption.value} value={categoryOption.value}>{categoryOption.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="text-xs uppercase tracking-widest text-on-surface-variant mb-2 block">Subcategory</label>
-                                <select
-                                    value={subcategory}
-                                    onChange={(e) => setSubcategory(e.target.value)}
-                                    className="w-full bg-surface-container-high border border-outline-variant/30 rounded-lg px-3 py-2 text-sm text-on-surface"
-                                >
-                                    <option value="ALL">All Subcategories</option>
-                                    {SHOP_SUBCATEGORIES
-                                        .filter((item) => primaryCategory === 'ALL' || item.primaryValue === primaryCategory)
-                                        .map((item) => (
-                                            <option key={item.value} value={item.value}>{item.label}</option>
-                                        ))}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="font-headline text-lg text-primary mb-4 tracking-wide uppercase">Material</h3>
-                        <div className="flex flex-col gap-3 font-label text-on-surface-variant">
-                            <label className="flex items-center gap-3 cursor-pointer group">
-                                <input 
-                                    className="form-checkbox h-4 w-4 text-primary bg-surface-container-high border-outline-variant rounded-DEFAULT focus:ring-primary focus:ring-opacity-50" 
-                                    type="checkbox" 
-                                    checked={materials.oak}
-                                    onChange={() => handleMaterialToggle('oak')}
-                                />
-                                <span className={`${materials.oak ? 'text-primary font-medium' : ''} group-hover:text-primary transition-colors`}>White Oak</span>
-                            </label>
-                            <label className="flex items-center gap-3 cursor-pointer group">
-                                <input 
-                                    className="form-checkbox h-4 w-4 text-primary bg-surface-container-high border-outline-variant rounded-DEFAULT focus:ring-primary focus:ring-opacity-50" 
-                                    type="checkbox" 
-                                    checked={materials.walnut}
-                                    onChange={() => handleMaterialToggle('walnut')}
-                                />
-                                <span className={`${materials.walnut ? 'text-primary font-medium' : ''} group-hover:text-primary transition-colors`}>Black Walnut</span>
-                            </label>
-                            <label className="flex items-center gap-3 cursor-pointer group">
-                                <input 
-                                    className="form-checkbox h-4 w-4 text-primary bg-surface-container-high border-outline-variant rounded-DEFAULT focus:ring-primary focus:ring-opacity-50" 
-                                    type="checkbox" 
-                                    checked={materials.pine}
-                                    onChange={() => handleMaterialToggle('pine')}
-                                />
-                                <span className={`${materials.pine ? 'text-primary font-medium' : ''} group-hover:text-primary transition-colors`}>Reclaimed Pine</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="font-headline text-lg text-primary mb-4 tracking-wide uppercase">Max Price: {formatCurrency(maxPrice)}</h3>
-                        <div className="flex flex-col gap-4 font-label">
-                            <input 
-                                className="w-full h-1 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-primary" 
-                                max="200000" 
-                                min="1000" 
-                                step="1000"
-                                type="range" 
-                                value={maxPrice} 
-                                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                            />
-                            <div className="flex justify-between text-sm text-on-surface-variant">
-                                <span>₹1,000</span>
-                                <span>₹200k+</span>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
+      <article
+        className="group relative overflow-hidden rounded-2xl bg-gray-100 cursor-pointer"
+        style={{ aspectRatio: isTall ? '3/4' : '4/5' }}
+        onClick={() => onItemClick(item)}
+      >
+        {/* Image */}
+        <img
+          src={item.coverImage || `https://images.unsplash.com/photo-${1519710164239 + item.id * 12345}-${item.id}abcdef?auto=format&fit=crop&w=800&q=80`}
+          alt={item.title}
+          loading="lazy"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          onError={(e) => {
+            e.target.src = 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80'
+          }}
+        />
 
-                <section className="flex-grow">
-                    <header className="mb-12 md:mb-20">
-                        <h1 className="font-headline text-4xl md:text-6xl text-primary mb-4 tracking-wide leading-tight">
-                            {subcategory !== 'ALL'
-                                ? SHOP_SUBCATEGORY_MAP[subcategory]?.label
-                                : primaryCategory !== 'ALL'
-                                    ? SHOP_PRIMARY_CATEGORIES.find((item) => item.value === primaryCategory)?.label
-                                    : 'Curated Gallery'}
-                        </h1>
-                        <p className="font-body text-lg text-on-surface-variant max-w-2xl leading-relaxed">
-                            {subcategory !== 'ALL'
-                                ? `Explore ${SHOP_SUBCATEGORY_MAP[subcategory]?.label?.toLowerCase()} crafted for durability, comfort, and everyday performance.`
-                                : primaryCategory !== 'ALL'
-                                    ? `Discover ${SHOP_PRIMARY_CATEGORIES.find((item) => item.value === primaryCategory)?.label?.toLowerCase()} pieces designed for long-term use.`
-                                    : 'Every piece is built with structure, purpose, and longevity in mind. Built for real living.'}
-                        </p>
-                    </header>
+        {/* Featured Badge */}
+        {item.featured && (
+          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-gray-900 text-[10px] font-bold uppercase tracking-[0.15em] px-3 py-1 rounded-full">
+            Featured
+          </div>
+        )}
 
-                    {loading || searching ? (
-                        <div className="flex justify-center items-center py-20">
-                            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                        </div>
-                    ) : filteredProducts.length === 0 ? (
-                        <div className="text-center py-20 text-on-surface-variant">
-                            <p className="font-body text-lg">No pieces found matching your criteria.</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16">
-                            {filteredProducts.map((product, idx) => (
-                                <article key={product.id} className={`group relative flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden transition-all duration-500 ease-in-out ${getOffsetClass(idx)}`}>
-                                    <div className={`relative ${idx % 2 === 0 ? 'aspect-[4/5]' : 'aspect-[3/4]'} bg-surface-container-low mb-6 overflow-hidden`}>
-                                        <img loading="lazy"
-                                            alt={product.name} 
-                                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-in-out" 
-                                            src={product.imageUrl || 'https://images.unsplash.com/photo-1592078615290-033ee584e267?auto=format&fit=crop&q=80&w=800'} 
-                                        />
-                                        <div className="absolute top-4 left-4 bg-tertiary-container/90 backdrop-blur-md text-on-tertiary-container font-label text-xs uppercase tracking-widest px-3 py-1 rounded-full">
-                                            {product.material || 'Solid Wood'}
-                                        </div>
-                                        <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end justify-center pb-8">
-                                            <Link to={`/products/${product.id}`} className="bg-surface/90 backdrop-blur-xl text-primary font-headline text-sm uppercase tracking-widest px-6 py-3 rounded-full shadow-2xl hover:bg-surface transition-colors duration-300">
-                                                View Details
-                                            </Link>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col px-2">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <h2 className="font-headline text-2xl text-primary mb-1">{product.name}</h2>
-                                            <button 
-                                                onClick={() => {
-                                                    wishlistService.toggle(product);
-                                                    const updated = wishlistService.get().map(p => p.id);
-                                                    setWishlistIds(updated);
-                                                    toast.success(updated.includes(product.id) ? 'Added to wishlist' : 'Removed from wishlist');
-                                                }}
-                                                className={`p-2 rounded-full transition-colors ${wishlistIds.includes(product.id) ? 'text-primary' : 'text-on-surface-variant hover:text-primary'}`}
-                                            >
-                                                <span className={`material-symbols-outlined text-[20px] ${wishlistIds.includes(product.id) ? 'fill-1' : ''}`} style={{fontVariationSettings: wishlistIds.includes(product.id) ? "'FILL' 1" : "'FILL' 0"}}>
-                                                    favorite
-                                                </span>
-                                            </button>
-                                        </div>
-                                        <p className="font-body text-sm text-on-surface-variant mb-4 line-clamp-1">{product.description}</p>
-                                        <p className="font-body text-lg text-primary font-medium">{formatCurrency(product.price)}</p>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    )}
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-6">
+          <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1">
+                  {item.roomType?.replace(/_/g, ' ') || item.category}
+                </p>
+                <h3 className="text-white font-semibold text-lg leading-tight">{item.title}</h3>
+              </div>
+              <div className="bg-white/20 backdrop-blur-md p-2 rounded-full text-white flex-shrink-0 ml-3">
+                <ArrowUpRight size={16} />
+              </div>
+            </div>
 
-                    {!loading && filteredProducts.length > 0 && (
-                        <div className="mt-24 flex justify-center">
-                            <button className="bg-surface-container border border-outline-variant/15 text-primary font-headline text-lg tracking-wide px-12 py-4 rounded-xl hover:bg-surface-container-high transition-colors duration-300">
-                                Load More Pieces
-                            </button>
-                        </div>
-                    )}
-                </section>
-            </main>
-        </>
-    );
-};
+            {/* Materials chips */}
+            {item.materialsList?.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {item.materialsList.slice(0, 3).map((mat) => (
+                  <span key={mat} className="text-[10px] bg-white/15 backdrop-blur-sm text-white px-2 py-0.5 rounded-full">
+                    {mat}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </article>
+    )
+  }
 
-export default GalleryPage;
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+      {/* Column 1 */}
+      <div className="flex flex-col gap-4 lg:gap-6">
+        {col1.map((item, i) => <GalleryCard key={item.id} item={item} index={i * 3} />)}
+      </div>
+      {/* Column 2 — offset for visual variety */}
+      <div className="flex flex-col gap-4 lg:gap-6 xl:mt-12">
+        {col2.map((item, i) => <GalleryCard key={item.id} item={item} index={i * 3 + 1} />)}
+      </div>
+      {/* Column 3 */}
+      <div className="flex flex-col gap-4 lg:gap-6 xl:mt-24 hidden xl:flex">
+        {col3.map((item, i) => <GalleryCard key={item.id} item={item} index={i * 3 + 2} />)}
+      </div>
+    </div>
+  )
+}
+
+// ─── Light Box Modal ──────────────────────────────────────────
+const LightBox = ({ item, onClose }) => {
+  const [currentImg, setCurrentImg] = useState(0)
+  const images = item.images?.length > 0 ? item.images : [item.coverImage].filter(Boolean)
+
+  useEffect(() => {
+    const handler = (e) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="max-w-5xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col lg:flex-row" onClick={(e) => e.stopPropagation()}>
+        {/* Image panel */}
+        <div className="lg:w-3/5 bg-gray-100">
+          <div className="relative aspect-[4/3] lg:aspect-auto lg:h-full">
+            <img
+              src={images[currentImg] || item.coverImage}
+              alt={item.title}
+              className="w-full h-full object-cover"
+            />
+            {images.length > 1 && (
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                {images.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentImg(idx)}
+                    className={`w-2 h-2 rounded-full transition-all ${idx === currentImg ? 'bg-white w-6' : 'bg-white/50'}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Detail panel */}
+        <div className="lg:w-2/5 p-8 flex flex-col">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-[0.15em] mb-2">
+                {item.roomType?.replace(/_/g, ' ') || item.category}
+              </p>
+              <h2 className="text-2xl font-bold text-gray-900">{item.title}</h2>
+            </div>
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <X size={20} className="text-gray-500" />
+            </button>
+          </div>
+
+          {item.description && (
+            <p className="text-gray-600 text-sm leading-relaxed mb-6">{item.description}</p>
+          )}
+
+          <div className="space-y-4 mt-auto">
+            {item.materialsList?.length > 0 && (
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-[0.15em] mb-2">Materials Used</p>
+                <div className="flex flex-wrap gap-2">
+                  {item.materialsList.map((mat) => (
+                    <span key={mat} className="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full font-medium">
+                      {mat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {item.projectDuration && (
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-[0.15em] mb-1">Crafting Time</p>
+                <p className="text-sm font-medium text-gray-700">{item.projectDuration}</p>
+              </div>
+            )}
+
+            {item.clientLocation && (
+              <div>
+                <p className="text-[10px] text-gray-400 uppercase tracking-[0.15em] mb-1">Delivered To</p>
+                <p className="text-sm font-medium text-gray-700">{item.clientLocation}</p>
+              </div>
+            )}
+
+            <Link
+              to="/custom-order"
+              className="block w-full text-center bg-gray-900 text-white font-semibold py-4 rounded-xl hover:bg-gray-700 transition-colors mt-4"
+            >
+              Commission Similar Piece →
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main Gallery Page ────────────────────────────────────────
+const GalleryPage = () => {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [selectedItem, setSelectedItem] = useState(null)
+  const [showFilters, setShowFilters] = useState(false)
+
+  const [filters, setFilters] = useState({
+    category: '',
+    roomType: '',
+    material: ''
+  })
+  const [activeMaterials, setActiveMaterials] = useState([])
+
+  const loadGallery = useCallback(async (newFilters, newPage = 0) => {
+    if (newPage === 0) setLoading(true)
+    else setLoadingMore(true)
+
+    try {
+      const data = await galleryService.getAll({
+        ...newFilters,
+        material: activeMaterials[0] || newFilters.material || '',
+        page: newPage,
+        size: 18
+      })
+      const content = data?.content || []
+      if (newPage === 0) setItems(content)
+      else setItems(prev => [...prev, ...content])
+      setHasMore(!data?.last)
+      setPage(newPage)
+    } catch (err) {
+      console.error('Failed to load gallery:', err)
+      // Fallback to empty state
+      if (newPage === 0) setItems([])
+    } finally {
+      setLoading(false)
+      setLoadingMore(false)
+    }
+  }, [activeMaterials])
+
+  useEffect(() => {
+    loadGallery(filters, 0)
+  }, [filters, activeMaterials])
+
+  const toggleMaterial = (mat) => {
+    setActiveMaterials(prev =>
+      prev.includes(mat) ? prev.filter(m => m !== mat) : [...prev, mat]
+    )
+  }
+
+  const clearFilters = () => {
+    setFilters({ category: '', roomType: '', material: '' })
+    setActiveMaterials([])
+  }
+
+  const activeFilterCount = [
+    filters.category, filters.roomType, ...activeMaterials
+  ].filter(Boolean).length
+
+  const SAMPLE_ITEMS = [
+    { id: 1, title: 'Heirloom Teak Dining Set', category: 'TABLES', roomType: 'DINING_ROOM', coverImage: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80', materialsList: ['Teak', 'Brass Hardware'], featured: true, projectDuration: '8 weeks', clientLocation: 'Koramangala, Bangalore' },
+    { id: 2, title: 'Floating Walnut Bookshelf', category: 'STORAGE', roomType: 'HOME_OFFICE', coverImage: 'https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=800&q=80', materialsList: ['Walnut', 'Steel'], featured: false, projectDuration: '3 weeks', clientLocation: 'Banjara Hills, Hyderabad' },
+    { id: 3, title: 'Minimal Platform Bed', category: 'BEDS', roomType: 'BEDROOM', coverImage: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80', materialsList: ['Oak', 'Linen Upholstery'], featured: true, projectDuration: '6 weeks', clientLocation: 'Juhu, Mumbai' },
+    { id: 4, title: 'Carved Rosewood Console', category: 'DECOR', roomType: 'LIVING_ROOM', coverImage: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80', materialsList: ['Rosewood'], featured: false, projectDuration: '4 weeks', clientLocation: 'Vasant Vihar, Delhi' },
+    { id: 5, title: 'Studio Lounge Chair', category: 'SEATING', roomType: 'LIVING_ROOM', coverImage: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80', materialsList: ['Teak', 'Leather'], featured: false, projectDuration: '5 weeks', clientLocation: 'Alwarpet, Chennai' },
+    { id: 6, title: 'Modular Kitchen Island', category: 'KITCHEN', roomType: 'KITCHEN', coverImage: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=800&q=80', materialsList: ['Birch Ply', 'Marble Countertop'], featured: false, projectDuration: '10 weeks', clientLocation: 'Whitefield, Bangalore' },
+  ]
+
+  const displayItems = items.length > 0 ? items : (loading ? [] : SAMPLE_ITEMS)
+
+  return (
+    <div className="min-h-screen bg-white text-gray-900">
+
+      {/* ── Hero Header ──────────────────────────────── */}
+      <div className="pt-24 pb-16 px-6 max-w-screen-2xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
+          <div>
+            <p className="text-[11px] text-on-surface-variant uppercase tracking-[0.2em] mb-3">Crafted in India · Est. 2012</p>
+            <h1 className="text-5xl md:text-7xl font-bold text-on-surface leading-none tracking-tight">
+              Our <br className="hidden md:block" />
+              <span className="italic font-light text-on-surface-variant">Portfolio</span>
+            </h1>
+          </div>
+          <div className="max-w-md">
+            <p className="text-on-surface-variant text-lg leading-relaxed">
+              Every piece in this gallery is a bespoke commission — designed, hand-crafted, and delivered to a single home. No two are alike.
+            </p>
+          </div>
+        </div>
+
+        {/* ── Filter Bar ─────────────────────────────── */}
+        <div className="flex flex-wrap gap-3 items-center border-t border-b border-gray-100 py-5">
+          {/* Category Pills */}
+          <div className="flex gap-2 flex-wrap">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => setFilters(prev => ({ ...prev, category: cat.value }))}
+                className={`px-4 py-2 text-xs font-semibold rounded-full border transition-all ${
+                  filters.category === cat.value
+                    ? 'bg-gray-900 text-white border-gray-900'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* More Filters Button */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`ml-auto flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-full border transition-all ${
+              showFilters || activeFilterCount > 0
+                ? 'bg-gray-900 text-white border-gray-900'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+            }`}
+          >
+            <SlidersHorizontal size={14} />
+            Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+          </button>
+        </div>
+
+        {/* ── Extended Filter Panel ───────────────────── */}
+        {showFilters && (
+          <div className="mt-4 p-6 bg-gray-50 rounded-2xl border border-gray-100">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Room Type */}
+              <div>
+                <label className="block text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-3">Room Type</label>
+                <div className="flex flex-col gap-2">
+                  {ROOM_TYPES.map((rt) => (
+                    <label key={rt.value} className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="roomType"
+                        value={rt.value}
+                        checked={filters.roomType === rt.value}
+                        onChange={() => setFilters(prev => ({ ...prev, roomType: rt.value }))}
+                        className="w-3.5 h-3.5 accent-gray-900"
+                      />
+                      <span className={`text-sm transition-colors ${filters.roomType === rt.value ? 'text-gray-900 font-semibold' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                        {rt.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Materials */}
+              <div className="md:col-span-2">
+                <label className="block text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-3">Primary Material</label>
+                <div className="flex flex-wrap gap-2">
+                  {MATERIALS.map((mat) => (
+                    <button
+                      key={mat}
+                      onClick={() => toggleMaterial(mat)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${
+                        activeMaterials.includes(mat)
+                          ? 'bg-gray-900 text-white border-gray-900'
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                      }`}
+                    >
+                      {mat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {activeFilterCount > 0 && (
+              <button
+                onClick={clearFilters}
+                className="mt-4 text-xs text-red-500 font-semibold flex items-center gap-1 hover:text-red-700"
+              >
+                <X size={12} /> Clear all filters
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ── Active filters display ──────────────────── */}
+        {activeFilterCount > 0 && !showFilters && (
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-400">Active:</span>
+            {filters.category && (
+              <span className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full font-medium">
+                {CATEGORIES.find(c => c.value === filters.category)?.label}
+                <button onClick={() => setFilters(p => ({...p, category: ''}))}><X size={10} /></button>
+              </span>
+            )}
+            {filters.roomType && (
+              <span className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full font-medium">
+                {ROOM_TYPES.find(r => r.value === filters.roomType)?.label}
+                <button onClick={() => setFilters(p => ({...p, roomType: ''}))}><X size={10} /></button>
+              </span>
+            )}
+            {activeMaterials.map(mat => (
+              <span key={mat} className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full font-medium">
+                {mat}
+                <button onClick={() => toggleMaterial(mat)}><X size={10} /></button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Gallery Grid ─────────────────────────────── */}
+      <div className="px-6 max-w-screen-2xl mx-auto pb-24">
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+            {[...Array(9)].map((_, i) => (
+              <div
+                key={i}
+                className="rounded-2xl bg-gray-100 animate-pulse"
+                style={{ aspectRatio: i % 4 === 1 || i % 4 === 3 ? '3/4' : '4/5' }}
+              />
+            ))}
+          </div>
+        ) : displayItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-32 text-center">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+              <span className="material-symbols-outlined text-gray-400 text-4xl">image_search</span>
+            </div>
+            <h3 className="text-xl font-bold text-gray-700 mb-2">No pieces found</h3>
+            <p className="text-gray-400 mb-6">Try adjusting your filters</p>
+            <button onClick={clearFilters} className="bg-gray-900 text-white px-6 py-3 rounded-xl text-sm font-semibold">
+              Clear Filters
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="text-sm text-gray-400 mb-8">
+              {displayItems.length} piece{displayItems.length !== 1 ? 's' : ''} in the collection
+            </div>
+            <MasonryGrid items={displayItems} onItemClick={setSelectedItem} />
+          </>
+        )}
+
+        {/* ── Load More ─────────────────────────────── */}
+        {hasMore && !loading && items.length > 0 && (
+          <div className="flex justify-center mt-16">
+            <button
+              onClick={() => loadGallery(filters, page + 1)}
+              disabled={loadingMore}
+              className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 font-semibold px-8 py-4 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50"
+            >
+              {loadingMore ? (
+                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <ChevronDown size={18} />
+              )}
+              Load More Pieces
+            </button>
+          </div>
+        )}
+
+        {/* ── CTA Banner ────────────────────────────── */}
+        <div className="mt-24 bg-gray-900 rounded-3xl p-12 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-950" />
+          <div className="relative z-10">
+            <p className="text-gray-400 text-xs uppercase tracking-[0.2em] mb-4">Commission Your Own</p>
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
+              Every piece starts<br />with a conversation.
+            </h2>
+            <p className="text-on-surface-variant max-w-lg mx-auto mb-8">
+              Share your vision and our master craftsmen will bring it to life — exactly as you imagined it.
+            </p>
+            <Link
+              to="/custom-order"
+              className="inline-flex items-center gap-2 bg-white text-gray-900 font-bold px-8 py-4 rounded-full hover:bg-gray-100 transition-all"
+            >
+              Start Your Project <ArrowUpRight size={18} />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Lightbox ─────────────────────────────────── */}
+      {selectedItem && <LightBox item={selectedItem} onClose={() => setSelectedItem(null)} />}
+    </div>
+  )
+}
+
+export default GalleryPage

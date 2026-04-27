@@ -1,27 +1,26 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { productService } from '../../services/productService';
-import { formatCurrency } from '../../utils/helpers';
-import api from '../../services/api';
-import { BUSINESS_DATA } from '../../utils/businessData';
+import { useSiteSettings } from '../../context/SiteSettingsContext';
 
 const HomePage = () => {
-  const [bestsellers, setBestsellers] = useState([]);
-  const [settings, setSettings] = useState({});
+  const [collection, setCollection] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { settings } = useSiteSettings()
+
+  const heroTitle = settings['hero.title'] || 'Built to last. <br />Designed to belong.'
+  const heroSubtitle = settings['hero.subtitle'] || 'Furnix creates handcrafted furniture that balances precision engineering with timeless design-pieces made to live with you, not be replaced.'
+  const homesFurnished = settings['stats.homesFurnished'] || '500+'
+  const deliveryReach = settings['stats.deliveryReach'] || '300+'
+  const warrantyYears = settings['stats.warrantyYears'] || '5'
+  const serviceArea = settings['stats.serviceArea'] || 'India'
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [productsRes, settingsRes] = await Promise.all([
-          productService.getAll(),
-          api.get('/settings')
-        ]);
+        const productsRes = await productService.getAll()
         const items = Array.isArray(productsRes) ? productsRes : (productsRes.content || []);
-        setBestsellers(items.slice(0, 3));
-        if (settingsRes.data && settingsRes.data.data) {
-          setSettings(settingsRes.data.data)
-        }
+        setCollection(items.slice(0, 3));
       } catch (error) {
         console.error('Failed to fetch homepage data:', error);
       } finally {
@@ -59,24 +58,24 @@ const HomePage = () => {
                       <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1", fontSize: "16px"}}>star</span>
                       <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1", fontSize: "16px"}}>star</span>
                   </div>
-                  <span className="text-white text-xs font-medium tracking-wide">Trusted by {BUSINESS_DATA.stats.homesFurnished} homes</span>
+                  <span className="text-white text-xs font-medium tracking-wide">Trusted by {homesFurnished} homes</span>
               </div>
           </div>
           
           <h1
             className="mb-5 md:mb-6 font-headline text-4xl sm:text-5xl leading-[1.05] tracking-tight text-white drop-shadow-lg md:text-7xl lg:text-[5.35rem]"
             style={{ textShadow: '0 8px 40px rgba(0,0,0,0.5)' }}
-            dangerouslySetInnerHTML={{ __html: settings['hero.title'] || 'Built to last. <br />Designed to belong.' }}
+            dangerouslySetInnerHTML={{ __html: heroTitle }}
           />
           <p className="mb-8 md:mb-10 max-w-[780px] font-body text-base sm:text-lg md:text-xl font-light text-white/95 drop-shadow-md">
-            {settings['hero.subtitle'] || 'Furnix creates handcrafted furniture that balances precision engineering with timeless design—pieces made to live with you, not be replaced.'}
+            {heroSubtitle}
           </p>
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 justify-center items-center w-full sm:w-auto">
             <Link
               className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 font-body font-semibold text-sm uppercase tracking-wider text-on-primary shadow-xl shadow-primary/30 transition-all duration-500 ease-out hover:bg-primary-container hover:text-on-primary-container hover:-translate-y-1"
               to="/gallery"
             >
-              Shop Now
+              View Collection
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </Link>
             <Link
@@ -87,11 +86,11 @@ const HomePage = () => {
             </Link>
           </div>
           <p className="mt-6 text-white/80 font-body text-sm font-medium tracking-wide shadow-sm">
-              Solid wood collections starting from ₹9,999
+              Solid wood collections handcrafted with precision
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <span className="rounded-full bg-white/15 border border-white/20 px-4 py-1 text-xs text-white/90">Delivered to {BUSINESS_DATA.stats.deliveryReach} homes</span>
-            <span className="rounded-full bg-white/15 border border-white/20 px-4 py-1 text-xs text-white/90">{BUSINESS_DATA.stats.warrantyYears}-year durability promise</span>
+            <span className="rounded-full bg-white/15 border border-white/20 px-4 py-1 text-xs text-white/90">Delivered to {deliveryReach} homes</span>
+            <span className="rounded-full bg-white/15 border border-white/20 px-4 py-1 text-xs text-white/90">{warrantyYears}-year durability promise</span>
           </div>
         </div>
       </header>
@@ -109,13 +108,13 @@ const HomePage = () => {
       </div>
 
       <main>
-        {/* ── Most Loved Pieces (Bestsellers) ──────── */}
-        <section className="mx-auto max-w-screen-2xl px-4 md:px-6 py-16 md:py-32" id="bestsellers">
+        {/* ── Featured Pieces (Collection) ──────── */}
+        <section className="mx-auto max-w-screen-2xl px-4 md:px-6 py-16 md:py-32" id="collection">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
             <div className="max-w-2xl">
               <span className="mb-4 block text-xs uppercase tracking-[0.2em] text-emerald-700 font-bold">Discover</span>
               <h2 className="font-headline text-3xl md:text-5xl tracking-wide text-emerald-950">
-                Most Loved Pieces
+                Featured Collection
               </h2>
             </div>
             <Link to="/gallery" className="text-emerald-800 font-medium hover:text-emerald-600 transition-colors flex items-center gap-1 border-b border-emerald-800/30 pb-1 w-max">
@@ -123,9 +122,9 @@ const HomePage = () => {
             </Link>
           </div>
 
-          {!loading && bestsellers.length > 0 ? (
+          {!loading && collection.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-                  {bestsellers.map(product => (
+                  {collection.map(product => (
                       <Link key={product.id} to={`/products/${product.id}`} className="group flex flex-col items-center bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2 border border-outline-variant/30">
                           <div className="w-full h-80 overflow-hidden bg-surface-container flex items-center justify-center p-8">
                               <img 
@@ -136,11 +135,10 @@ const HomePage = () => {
                           </div>
                           <div className="w-full p-8 flex flex-col items-center text-center">
                               <h3 className="font-headline text-2xl text-emerald-950 mb-3 group-hover:text-emerald-700 transition-colors">{product.name}</h3>
-                              <p className="text-stone-500 font-body text-sm mb-6 line-clamp-2">{product.description || 'Handcrafted solid wood furniture built to last generations.'}</p>
+                              <p className="text-on-surface-variant font-body text-sm mb-6 line-clamp-2">{product.description || 'Handcrafted solid wood furniture built to last generations.'}</p>
                               <div className="mt-auto flex flex-col items-center gap-4 w-full">
-                                  <span className="font-body text-xl text-emerald-900 font-medium">{formatCurrency(product.price)}</span>
                                   <button className="w-full py-3 rounded-xl bg-emerald-50 text-emerald-900 font-medium tracking-wide border border-emerald-900/10 group-hover:bg-emerald-900 group-hover:text-white transition-colors duration-300">
-                                      View Details
+                                      View Piece
                                   </button>
                               </div>
                           </div>
@@ -195,7 +193,7 @@ const HomePage = () => {
         <section className="bg-surface-container-low py-24 border-y border-outline-variant/30">
             <div className="max-w-screen-2xl mx-auto px-6">
                 <div className="text-center mb-16">
-                    <h2 className="font-headline text-3xl md:text-4xl text-emerald-950 mb-4">Loved by {BUSINESS_DATA.stats.homesFurnished} Homes Across {BUSINESS_DATA.stats.serviceArea}</h2>
+                    <h2 className="font-headline text-3xl md:text-4xl text-emerald-950 mb-4">Loved by {homesFurnished} Homes Across {serviceArea}</h2>
                     <p className="font-body text-stone-600 max-w-2xl mx-auto">Don't just take our word for it. Here is what our community of design lovers has to say.</p>
                 </div>
                 
@@ -214,7 +212,7 @@ const HomePage = () => {
                             <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-800 font-headline font-bold text-lg">AS</div>
                             <div>
                                 <p className="font-headline text-emerald-950">Aarav S., Mumbai</p>
-                                <p className="font-body text-xs text-stone-500">Verified Buyer</p>
+                                <p className="font-body text-xs text-stone-500">Bespoke Client</p>
                             </div>
                         </div>
                     </div>
@@ -245,12 +243,12 @@ const HomePage = () => {
                             <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
                             <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>star</span>
                         </div>
-                        <p className="font-body text-stone-700 italic mb-6 leading-relaxed">"You simply can't find this level of quality in commercial furniture stores anymore. The joinery details on our lounge chair are beautiful. It's truly a generational piece."</p>
+                                <p className="font-body text-on-surface-variant italic mb-6 leading-relaxed">"You simply can't find this level of quality in commercial furniture stores anymore. The joinery details on our lounge chair are beautiful. It's truly a generational piece."</p>
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-800 font-headline font-bold text-lg">RM</div>
                             <div>
                                 <p className="font-headline text-emerald-950">Rahul M., Bangalore</p>
-                                <p className="font-body text-xs text-stone-500">Verified Buyer</p>
+                                <p className="font-body text-xs text-stone-500">Bespoke Client</p>
                             </div>
                         </div>
                     </div>
@@ -272,25 +270,25 @@ const HomePage = () => {
                   <p>From strictly selecting premium hardwoods to applying traditional precision joinery, every decision is engineered to increase durability, stability, and long-term value in your home.</p>
                 </div>
                 <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/20">
-                        <span className="material-symbols-outlined text-emerald-700 mb-4 text-3xl" style={{fontWeight: 200}}>forest</span>
-                        <h4 className="font-headline text-emerald-950 text-xl mb-2">Premium Hardwoods</h4>
-                        <p className="font-body text-sm text-stone-600">We never use MDF or particle board. Only solid, sustainably sourced timber.</p>
+                    <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/20 shadow-sm">
+                        <span className="material-symbols-outlined text-primary mb-4 text-3xl" style={{fontWeight: 200}}>forest</span>
+                        <h4 className="font-headline text-primary text-xl mb-2">Premium Hardwoods</h4>
+                        <p className="font-body text-sm text-on-surface-variant">We never use MDF or particle board. Only solid, sustainably sourced timber.</p>
                     </div>
-                    <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/20">
-                        <span className="material-symbols-outlined text-emerald-700 mb-4 text-3xl" style={{fontWeight: 200}}>handyman</span>
-                        <h4 className="font-headline text-emerald-950 text-xl mb-2">Precision Joinery</h4>
-                        <p className="font-body text-sm text-stone-600">Traditional techniques like mortise and tenon ensure joints that won't loosen.</p>
+                    <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/20 shadow-sm">
+                        <span className="material-symbols-outlined text-primary mb-4 text-3xl" style={{fontWeight: 200}}>handyman</span>
+                        <h4 className="font-headline text-primary text-xl mb-2">Precision Joinery</h4>
+                        <p className="font-body text-sm text-on-surface-variant">Traditional techniques like mortise and tenon ensure joints that won't loosen.</p>
                     </div>
-                    <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/20">
-                        <span className="material-symbols-outlined text-emerald-700 mb-4 text-3xl" style={{fontWeight: 200}}>water_drop</span>
-                        <h4 className="font-headline text-emerald-950 text-xl mb-2">Natural Finishes</h4>
-                        <p className="font-body text-sm text-stone-600">Hand-rubbed oils protect the wood from inside out, allowing it to age gracefully.</p>
+                    <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/20 shadow-sm">
+                        <span className="material-symbols-outlined text-primary mb-4 text-3xl" style={{fontWeight: 200}}>water_drop</span>
+                        <h4 className="font-headline text-primary text-xl mb-2">Natural Finishes</h4>
+                        <p className="font-body text-sm text-on-surface-variant">Hand-rubbed oils protect the wood from inside out, allowing it to age gracefully.</p>
                     </div>
-                    <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/20">
-                        <span className="material-symbols-outlined text-emerald-700 mb-4 text-3xl" style={{fontWeight: 200}}>verified_user</span>
-                        <h4 className="font-headline text-emerald-950 text-xl mb-2">5-Year Warranty</h4>
-                        <p className="font-body text-sm text-stone-600">We stand by our craft. If there's a structural defect, we fix it.</p>
+                    <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/20 shadow-sm">
+                        <span className="material-symbols-outlined text-primary mb-4 text-3xl" style={{fontWeight: 200}}>verified_user</span>
+                        <h4 className="font-headline text-primary text-xl mb-2">5-Year Warranty</h4>
+                        <p className="font-body text-sm text-on-surface-variant">We stand by our craft. If there's a structural defect, we fix it.</p>
                     </div>
                 </div>
               </div>
@@ -369,7 +367,7 @@ const HomePage = () => {
                 to="/gallery"
                 className="inline-flex items-center gap-2 bg-transparent text-white border border-white/30 font-body font-semibold px-10 py-5 rounded-xl hover:bg-white/10 transition-colors duration-300 tracking-wide uppercase text-sm"
               >
-                Shop In-Stock Pieces
+                Explore Collection
               </Link>
             </div>
           </div>

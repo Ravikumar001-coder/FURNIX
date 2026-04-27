@@ -35,7 +35,7 @@ const AdminLayout = ({ children }) => {
           >
             <span className="material-symbols-outlined text-2xl">menu</span>
           </button>
-          <img src="/logo.png" alt="Furnix" className="h-8 w-auto object-contain" />
+          <img src="/assets/furnix-logo.png" alt="Furnix" className="h-8 w-auto object-contain" />
         </div>
         <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-headline text-sm font-bold">
           A
@@ -63,7 +63,7 @@ const AdminLayout = ({ children }) => {
 
         {/* Brand */}
         <div className="mb-8 px-4 flex flex-col gap-2">
-          <img src="/logo.png" alt="Furnix" className="h-10 w-auto object-contain self-start" />
+          <img src="/assets/furnix-logo.png" alt="Furnix" className="h-10 w-auto object-contain self-start" />
           <p className="text-xs text-on-surface-variant mt-1">Managing the Craft</p>
         </div>
 

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { orderService } from '../../services/orderService'
@@ -35,7 +35,7 @@ const CustomerAccountPage = () => {
     const fetchData = async () => {
       try {
         const [ordersRes] = await Promise.all([
-          orderService.getMyOrders(0, 20)
+          orderService.getMyInquiries(0, 20)
         ])
         setOrders(ordersRes.content || [])
         setWishlist(wishlistService.get())
@@ -51,8 +51,8 @@ const CustomerAccountPage = () => {
 
   const customOrders = useMemo(() => {
     return orders.filter((order) =>
-      String(order.productType || '').toUpperCase().includes('CUSTOM')
-      || String(order.productType || '').toUpperCase().includes('BESPOKE')
+      String(order.pieceType || '').toUpperCase().includes('CUSTOM')
+      || String(order.pieceType || '').toUpperCase().includes('BESPOKE')
     )
   }, [orders])
 
@@ -119,7 +119,7 @@ const CustomerAccountPage = () => {
                 <div className="space-y-1">
                   <h2 className="font-headline text-2xl text-on-surface">{user.fullName || user.username}</h2>
                   <p className="font-body text-sm text-on-surface-variant">{user.username}</p>
-                  {user.phone && <p className="font-body text-xs text-on-surface-variant/80">{user.phone}</p>}
+                  {user.phone && <p className="font-body text-xs text-on-surface-variant">{user.phone}</p>}
                 </div>
 
                 <div className="w-full pt-4 border-t border-outline-variant/10 flex flex-col gap-3">
@@ -150,15 +150,15 @@ const CustomerAccountPage = () => {
               <h3 className="font-headline text-xl mb-6 relative z-10">Quick Stats</h3>
               <div className="space-y-4 relative z-10">
                 <div className="flex items-center justify-between">
-                  <span className="text-on-primary/70 text-sm">Total Orders</span>
+                  <span className="text-on-primary text-sm">Total Inquiries</span>
                   <strong className="text-xl">{orders.length}</strong>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-on-primary/70 text-sm">Wishlist Items</span>
+                  <span className="text-on-primary text-sm">Wishlist Items</span>
                   <strong className="text-xl">{wishlist.length}</strong>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-on-primary/70 text-sm">Custom Designs</span>
+                  <span className="text-on-primary text-sm">Custom Designs</span>
                   <strong className="text-xl">{customOrders.length}</strong>
                 </div>
               </div>
@@ -234,8 +234,8 @@ const CustomerAccountPage = () => {
             {/* Recent Orders */}
             <section className="bg-white rounded-3xl border border-outline-variant/20 p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="font-headline text-2xl text-on-surface">Recent Orders</h2>
-                <Link to="/order" className="text-sm font-body text-primary font-bold hover:underline flex items-center gap-1">
+                <h2 className="font-headline text-2xl text-on-surface">Recent Inquiries</h2>
+                <Link to="/custom-order" className="text-sm font-body text-primary font-bold hover:underline flex items-center gap-1">
                   Start New Design <span className="material-symbols-outlined text-sm">add_circle</span>
                 </Link>
               </div>
@@ -248,7 +248,7 @@ const CustomerAccountPage = () => {
               ) : orders.length === 0 ? (
                 <div className="text-center py-16 bg-surface-container-lowest rounded-2xl border-2 border-dashed border-outline-variant/20">
                   <span className="material-symbols-outlined text-outline-variant text-5xl mb-4">shopping_basket</span>
-                  <p className="font-body text-on-surface-variant mb-6">No handcrafted pieces ordered yet.</p>
+                  <p className="font-body text-on-surface-variant mb-6">No handcrafted pieces requested yet.</p>
                   <Link to="/gallery" className="inline-flex bg-primary text-on-primary px-8 py-3 rounded-xl font-body font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:-translate-y-1 transition-all">
                     Browse Collections
                   </Link>
@@ -261,16 +261,16 @@ const CustomerAccountPage = () => {
                         <span className="material-symbols-outlined">table_restaurant</span>
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-body font-bold text-on-surface">{order.productType || 'Custom Piece'}</h3>
+                        <h3 className="font-body font-bold text-on-surface">{order.pieceType || 'Custom Piece'}</h3>
                         <p className="font-body text-xs text-on-surface-variant flex items-center gap-2">
-                          Order #{order.id} • {new Date(order.createdAt).toLocaleDateString()}
+                          Inquiry #{order.id} • {new Date(order.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary-container text-on-primary-container border border-primary/10">
-                          {order.status}
+                          {(order.status || 'NEW').replace(/_/g, ' ')}
                         </span>
-                        <Link to={`/track-order?id=${order.id}`} className="text-primary p-2">
+                        <Link to={`/account/inquiry/${order.id}`} className="text-primary p-2">
                            <span className="material-symbols-outlined text-[20px]">chevron_right</span>
                         </Link>
                       </div>
@@ -305,7 +305,7 @@ const CustomerAccountPage = () => {
                       </div>
                       <div className="flex-1 flex flex-col justify-center">
                         <h4 className="font-headline text-lg text-on-surface line-clamp-1">{item.name}</h4>
-                        <p className="text-primary font-body font-medium mb-2">{formatCurrency(item.price)}</p>
+                        <p className="text-on-surface-variant text-xs mb-2">Bespoke Collection</p>
                         <div className="flex items-center gap-2">
                            <Link to={`/products/${item.id}`} className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors">View Piece</Link>
                            <span className="text-outline-variant text-[10px]">•</span>

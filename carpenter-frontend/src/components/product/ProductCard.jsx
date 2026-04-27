@@ -1,4 +1,4 @@
-﻿import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { formatPrice, truncate } from '../../utils/helpers'
 
 const ProductCard = ({ product }) => {
@@ -40,16 +40,13 @@ const ProductCard = ({ product }) => {
           {truncate(product.description, 70)}
         </p>
 
-        {/* Price + Button */}
-        <div className="flex items-center justify-between">
-          <span className="font-sans text-sm font-semibold text-bronze-light">
-            {formatPrice(product.price)}
-          </span>
+        {/* Detail Button */}
+        <div className="flex items-center justify-center">
           <button
             onClick={() => navigate(`/products/${product.id}`)}
-            className="btn-bronze px-4 py-2 text-xs"
+            className="btn-bronze w-full py-2 text-xs"
           >
-            Detail
+            View Piece
           </button>
         </div>
       </div>
