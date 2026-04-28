@@ -12,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -25,6 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -51,6 +53,8 @@ public class SecurityConfig {
                                 "/actuator/info")
                         .permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories", "/api/v1/categories/**").permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**", "/api/v2/products/**").permitAll()
 
@@ -63,6 +67,9 @@ public class SecurityConfig {
                                 "/api/inquiries/my-inquiries", "/api/inquiries/my-inquiries/**",
                                 "/api/v1/inquiries/my-inquiries", "/api/v1/inquiries/my-inquiries/**",
                                 "/api/v2/inquiries/my-inquiries", "/api/v2/inquiries/my-inquiries/**").hasAuthority("ROLE_USER")
+
+                        .requestMatchers(HttpMethod.POST, "/api/quotes/calculate", "/api/v1/quotes/calculate")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
 
                         .requestMatchers(HttpMethod.POST, "/api/products", "/api/products/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/products", "/api/products/**").hasAuthority("ROLE_ADMIN")

@@ -1,7 +1,9 @@
 package com.carpenter.controller;
 
+import com.carpenter.dto.request.QuoteCalculationRequest;
 import com.carpenter.dto.request.QuoteRequest;
 import com.carpenter.dto.response.ApiResponse;
+import com.carpenter.dto.response.QuoteCalculationResponse;
 import com.carpenter.dto.response.QuoteResponse;
 import com.carpenter.model.QuoteStatus;
 import com.carpenter.service.QuoteService;
@@ -9,10 +11,11 @@ import com.carpenter.service.PdfService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/quotes")
+@RequestMapping({"/api/quotes", "/api/v1/quotes"})
 @RequiredArgsConstructor
 public class QuoteController {
 
@@ -24,6 +27,14 @@ public class QuoteController {
     public ResponseEntity<ApiResponse<QuoteResponse>> createQuote(@Valid @RequestBody QuoteRequest request) {
         QuoteResponse response = quoteService.createQuote(request);
         return ResponseEntity.ok(ApiResponse.success("Quote created successfully", response));
+    }
+
+    @PostMapping("/calculate")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public ResponseEntity<ApiResponse<QuoteCalculationResponse>> calculateQuote(
+            @Valid @RequestBody QuoteCalculationRequest request) {
+        QuoteCalculationResponse response = quoteService.calculateQuote(request);
+        return ResponseEntity.ok(ApiResponse.success("Quote calculated successfully", response));
     }
 
     @GetMapping("/{id}")

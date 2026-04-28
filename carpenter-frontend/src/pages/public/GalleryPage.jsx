@@ -5,27 +5,54 @@ import { X, SlidersHorizontal, ArrowUpRight, ChevronDown } from 'lucide-react'
 
 // ─── Filter Config ───────────────────────────────────────────
 const CATEGORIES = [
-  { value: '', label: 'All Categories' },
-  { value: 'SEATING',   label: 'Seating' },
-  { value: 'TABLES',    label: 'Tables & Desks' },
-  { value: 'STORAGE',   label: 'Storage & Wardrobes' },
-  { value: 'BEDS',      label: 'Beds & Frames' },
-  { value: 'DOORS',     label: 'Doors & Panels' },
-  { value: 'KITCHEN',   label: 'Kitchen & Modular' },
-  { value: 'DECOR',     label: 'Décor & Accents' },
-  { value: 'OUTDOOR',   label: 'Outdoor' },
+  { value: '', label: 'All Projects' },
+  { value: 'home', label: 'Home' },
+  { value: 'office-corporate', label: 'Office' },
+  { value: 'hospital-healthcare', label: 'Healthcare' },
+  { value: 'hotel-hospitality', label: 'Hospitality' },
+  { value: 'institute-education', label: 'Education' },
+  { value: 'retail-showroom', label: 'Retail' },
+  { value: 'outdoor-landscape', label: 'Outdoor' },
+  { value: 'custom', label: 'Custom' },
 ]
 
-const ROOM_TYPES = [
-  { value: '', label: 'All Rooms' },
-  { value: 'LIVING_ROOM',  label: 'Living Room' },
-  { value: 'BEDROOM',      label: 'Bedroom' },
-  { value: 'DINING_ROOM',  label: 'Dining Room' },
-  { value: 'HOME_OFFICE',  label: 'Home Office' },
-  { value: 'KITCHEN',      label: 'Kitchen' },
-  { value: 'BATHROOM',     label: 'Bathroom' },
-  { value: 'OUTDOOR',      label: 'Outdoor / Garden' },
-]
+const SUB_CATEGORIES = {
+  'home': [
+    { value: 'living-room', label: 'Living Room' },
+    { value: 'bedroom', label: 'Bedroom' },
+    { value: 'kitchen', label: 'Kitchen' },
+    { value: 'dining-room', label: 'Dining Room' },
+    { value: 'wardrobe', label: 'Wardrobe' },
+    { value: 'tv-unit', label: 'TV Unit' },
+    { value: 'pooja-room', label: 'Pooja Room' },
+    { value: 'full-home-interior', label: 'Full Home' }
+  ],
+  'office-corporate': [
+    { value: 'executive-desk', label: 'Executive Desk' },
+    { value: 'workstation', label: 'Workstation' },
+    { value: 'conference-table', label: 'Conference Table' },
+    { value: 'reception-desk', label: 'Reception' },
+    { value: 'full-office-setup', label: 'Full Setup' }
+  ],
+  'hospital-healthcare': [
+    { value: 'reception-counter', label: 'Reception' },
+    { value: 'patient-bed-unit', label: 'Patient Unit' },
+    { value: 'lab-furniture', label: 'Lab' },
+    { value: 'doctor-cabin', label: 'Doctor Cabin' }
+  ],
+  'hotel-hospitality': [
+    { value: 'guest-room-furniture', label: 'Guest Room' },
+    { value: 'lobby-seating', label: 'Lobby' },
+    { value: 'restaurant-furniture', label: 'Restaurant' },
+    { value: 'bar-counter', label: 'Bar' }
+  ],
+  'outdoor-landscape': [
+    { value: 'pergola', label: 'Pergola' },
+    { value: 'garden-seating', label: 'Garden' },
+    { value: 'decking', label: 'Decking' },
+    { value: 'outdoor-kitchen', label: 'Outdoor Kitchen' }
+  ]
+}
 
 const MATERIALS = [
   'Teak', 'Rosewood', 'Walnut', 'Oak', 'Pine',
@@ -222,7 +249,7 @@ const GalleryPage = () => {
 
   const [filters, setFilters] = useState({
     category: '',
-    roomType: '',
+    subCategory: '',
     material: ''
   })
   const [activeMaterials, setActiveMaterials] = useState([])
@@ -264,12 +291,12 @@ const GalleryPage = () => {
   }
 
   const clearFilters = () => {
-    setFilters({ category: '', roomType: '', material: '' })
+    setFilters({ category: '', subCategory: '', material: '' })
     setActiveMaterials([])
   }
 
   const activeFilterCount = [
-    filters.category, filters.roomType, ...activeMaterials
+    filters.category, filters.subCategory, ...activeMaterials
   ].filter(Boolean).length
 
   const SAMPLE_ITEMS = [
@@ -310,7 +337,7 @@ const GalleryPage = () => {
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.value}
-                onClick={() => setFilters(prev => ({ ...prev, category: cat.value }))}
+                onClick={() => setFilters(prev => ({ ...prev, category: cat.value, subCategory: '' }))}
                 className={`px-4 py-2 text-xs font-semibold rounded-full border transition-all ${
                   filters.category === cat.value
                     ? 'bg-gray-900 text-white border-gray-900'
@@ -340,25 +367,46 @@ const GalleryPage = () => {
         {showFilters && (
           <div className="mt-4 p-6 bg-gray-50 rounded-2xl border border-gray-100">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Room Type */}
+              {/* Subcategories (Dynamic) */}
               <div>
-                <label className="block text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-3">Room Type</label>
-                <div className="flex flex-col gap-2">
-                  {ROOM_TYPES.map((rt) => (
-                    <label key={rt.value} className="flex items-center gap-2 cursor-pointer group">
-                      <input
-                        type="radio"
-                        name="roomType"
-                        value={rt.value}
-                        checked={filters.roomType === rt.value}
-                        onChange={() => setFilters(prev => ({ ...prev, roomType: rt.value }))}
-                        className="w-3.5 h-3.5 accent-gray-900"
-                      />
-                      <span className={`text-sm transition-colors ${filters.roomType === rt.value ? 'text-gray-900 font-semibold' : 'text-gray-500 group-hover:text-gray-700'}`}>
-                        {rt.label}
-                      </span>
-                    </label>
-                  ))}
+                <label className="block text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-3">
+                  {filters.category ? `${CATEGORIES.find(c => c.value === filters.category)?.label} Specialization` : 'Sub-Categories'}
+                </label>
+                <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                  {!filters.category ? (
+                    <p className="text-xs text-gray-400 italic">Select a category above to see specific types</p>
+                  ) : (
+                    <>
+                      <label className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name="subCategory"
+                          value=""
+                          checked={filters.subCategory === ''}
+                          onChange={() => setFilters(prev => ({ ...prev, subCategory: '' }))}
+                          className="w-3.5 h-3.5 accent-gray-900"
+                        />
+                        <span className={`text-sm transition-colors ${filters.subCategory === '' ? 'text-gray-900 font-semibold' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                          All {CATEGORIES.find(c => c.value === filters.category)?.label}
+                        </span>
+                      </label>
+                      {(SUB_CATEGORIES[filters.category] || []).map((sc) => (
+                        <label key={sc.value} className="flex items-center gap-2 cursor-pointer group">
+                          <input
+                            type="radio"
+                            name="subCategory"
+                            value={sc.value}
+                            checked={filters.subCategory === sc.value}
+                            onChange={() => setFilters(prev => ({ ...prev, subCategory: sc.value }))}
+                            className="w-3.5 h-3.5 accent-gray-900"
+                          />
+                          <span className={`text-sm transition-colors ${filters.subCategory === sc.value ? 'text-gray-900 font-semibold' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                            {sc.label}
+                          </span>
+                        </label>
+                      ))}
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -404,10 +452,10 @@ const GalleryPage = () => {
                 <button onClick={() => setFilters(p => ({...p, category: ''}))}><X size={10} /></button>
               </span>
             )}
-            {filters.roomType && (
+            {filters.subCategory && (
               <span className="flex items-center gap-1 bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full font-medium">
-                {ROOM_TYPES.find(r => r.value === filters.roomType)?.label}
-                <button onClick={() => setFilters(p => ({...p, roomType: ''}))}><X size={10} /></button>
+                {SUB_CATEGORIES[filters.category]?.find(sc => sc.value === filters.subCategory)?.label}
+                <button onClick={() => setFilters(p => ({...p, subCategory: ''}))}><X size={10} /></button>
               </span>
             )}
             {activeMaterials.map(mat => (

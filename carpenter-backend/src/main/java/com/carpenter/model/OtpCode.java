@@ -5,7 +5,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "otp_codes")
+@Table(name = "otp_codes",
+       indexes = {
+           @Index(name = "idx_otp_codes_phone_used_created", columnList = "phone_number, used, created_at")
+       })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

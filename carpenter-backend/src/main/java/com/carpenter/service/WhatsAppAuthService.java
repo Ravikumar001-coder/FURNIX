@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -57,28 +58,22 @@ public class WhatsAppAuthService {
         log.info("OTP [{}] requested and sent to phone: {}", otp, cleanPhone);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public AuthResponse verifyOtp(String phoneNumber, String code) {
         String cleanPhone = phoneNumber.replaceAll("[^0-9]", "");
-        
-        OtpCode otpCode = otpCodeRepository.findTopByPhoneNumberAndUsedOrderByCreatedAtDesc(cleanPhone, false)
-                .orElseThrow(() -> new BadRequestException("No OTP found for this number"));
-        
-        log.info("Verifying OTP for phone: {} | Provided code: {} | Expected code: {}", cleanPhone, code, otpCode.getCode());
 
-        if (otpCode.getExpiryTime().isBefore(LocalDateTime.now())) {
-            log.warn("OTP expired for phone: {}", cleanPhone);
-            throw new BadRequestException("OTP has expired");
-        }
-
-        if (!otpCode.getCode().equals(code.trim())) {
+        LocalDateTime now = LocalDateTime.now();
+        int updated = otpCodeRepository.markUsedIfValid(cleanPhone, code.trim(), now);
+        if (updated == 0) {
+            OtpCode latest = otpCodeRepository.findTopByPhoneNumberOrderByCreatedAtDesc(cleanPhone)
+                    .orElseThrow(() -> new BadRequestException("No OTP found for this number"));
+            if (latest.getExpiryTime().isBefore(now)) {
+                log.warn("OTP expired for phone: {}", cleanPhone);
+                throw new BadRequestException("OTP has expired");
+            }
             log.warn("Invalid OTP code provided for phone: {}", cleanPhone);
             throw new BadRequestException("Invalid OTP code");
         }
-
-        // Mark OTP as used
-        otpCode.setUsed(true);
-        otpCodeRepository.save(otpCode);
 
         // Find or create customer
         Customer customer = customerRepository.findByPhone(cleanPhone).orElseGet(() -> {

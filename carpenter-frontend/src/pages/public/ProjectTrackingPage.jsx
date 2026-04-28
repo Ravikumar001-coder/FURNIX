@@ -5,6 +5,10 @@ import { projectService } from '../../services/projectService';
 import { formatDate, timeAgo } from '../../utils/helpers';
 import PublicLayout from '../../components/layout/PublicLayout';
 
+// Simple Fallback Icons if Lucide ones are missing or different
+const Calculator = (props) => <span {...props} className="material-symbols-outlined text-[20px]">calculate</span>;
+const Sparkles = (props) => <span {...props} className="material-symbols-outlined text-[20px]">auto_awesome</span>;
+
 const STAGE_CONFIG = {
   INQUIRY: { icon: Clock, label: 'Inquiry Received', color: 'blue' },
   ESTIMATE: { icon: Calculator, label: 'Estimate Provided', color: 'indigo' },
@@ -16,10 +20,6 @@ const STAGE_CONFIG = {
   READY: { icon: CheckCircle2, label: 'Quality Check Passed', color: 'emerald' },
   DELIVERED: { icon: Truck, label: 'Delivered & Installed', color: 'green' }
 };
-
-// Simple Fallback Icons if Lucide ones are missing or different
-const Calculator = (props) => <span {...props} className="material-symbols-outlined text-[20px]">calculate</span>;
-const Sparkles = (props) => <span {...props} className="material-symbols-outlined text-[20px]">auto_awesome</span>;
 
 const ProjectTrackingPage = () => {
   const { id } = useParams();

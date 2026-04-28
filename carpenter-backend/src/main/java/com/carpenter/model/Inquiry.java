@@ -10,9 +10,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "inquiries",
        indexes = {
-           @Index(name = "idx_inquiry_status", columnList = "status_v2"),
+           @Index(name = "idx_inquiries_status_v2", columnList = "status_v2"),
            @Index(name = "idx_inquiry_email", columnList = "email"),
-           @Index(name = "idx_inquiry_created", columnList = "created_at")
+           @Index(name = "idx_inquiry_created", columnList = "created_at"),
+           @Index(name = "idx_inquiries_customer_id", columnList = "customer_id")
        })
 @Data
 @NoArgsConstructor
@@ -100,7 +101,7 @@ public class Inquiry {
     @Column(name = "admin_notes", columnDefinition = "TEXT")
     private String adminNotes;
 
-    @Column(name = "idempotency_key", unique = true, length = 100)
+    @Column(name = "idempotency_key", nullable = false, unique = true, length = 100)
     private String idempotencyKey;
 
     // ─── Timestamps ──────────────────────────────────────

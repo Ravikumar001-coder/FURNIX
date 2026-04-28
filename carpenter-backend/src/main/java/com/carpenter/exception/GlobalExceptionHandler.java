@@ -92,6 +92,15 @@ public class GlobalExceptionHandler {
         return buildProblem(HttpStatus.BAD_REQUEST, "Bad request", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(InvalidQuoteException.class)
+    public ProblemDetail handleInvalidQuote(
+            InvalidQuoteException ex,
+            HttpServletRequest request) {
+
+        log.warn("Invalid quote: {}", ex.getMessage());
+        return buildProblem(HttpStatus.BAD_REQUEST, "Invalid quote", ex.getMessage(), request);
+    }
+
     // ─── Security Errors ─────────────────────────────────────────
 
     @ExceptionHandler(BadCredentialsException.class)

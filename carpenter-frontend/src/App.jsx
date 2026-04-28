@@ -1,115 +1,91 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { lazy, Suspense } from 'react'
-import { Toaster } from 'react-hot-toast'
-import { AuthProvider } from './context/AuthContext'
-import { SiteSettingsProvider } from './context/SiteSettingsContext'
-import ProtectedRoute from './components/ProtectedRoute'
-import PublicLayout from './components/layout/PublicLayout'
-import Spinner from './components/ui/Spinner'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
-// Lazy load Pages
-const HomePage = lazy(() => import('./pages/public/HomePage'))
-const GalleryPage = lazy(() => import('./pages/public/GalleryPage'))
-const ProductDetailPage = lazy(() => import('./pages/public/ProductDetailPage'))
-const OrderPage = lazy(() => import('./pages/public/OrderPage'))
-const ContactPage = lazy(() => import('./pages/public/ContactPage'))
-const TrackOrderPage = lazy(() => import('./pages/public/TrackOrderPage'))
-const ShippingReturnsPage = lazy(() => import('./pages/public/ShippingReturnsPage'))
-const PrivacyPage = lazy(() => import('./pages/public/PrivacyPage'))
-const CustomerLoginPage = lazy(() => import('./pages/public/CustomerLoginPage'))
-const CustomerRegisterPage = lazy(() => import('./pages/public/CustomerRegisterPage'))
-const CustomerAccountPage = lazy(() => import('./pages/public/CustomerAccountPage'))
-const CustomerInquiryDetailPage = lazy(() => import('./pages/public/CustomerInquiryDetailPage'))
-const ProjectTrackingPage = lazy(() => import('./pages/public/ProjectTrackingPage'))
-const ForgotPasswordPage = lazy(() => import('./pages/public/ForgotPasswordPage'))
+// Context Providers
+import { AuthProvider } from './context/AuthContext';
+import { SiteSettingsProvider } from './context/SiteSettingsContext';
 
-// Lazy load Admin Pages
-const LoginPage = lazy(() => import('./pages/admin/LoginPage'))
-const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'))
-const ProductsPage = lazy(() => import('./pages/admin/ProductsPage'))
-const ProductFormPage = lazy(() => import('./pages/admin/ProductFormPage'))
-const OrdersPage = lazy(() => import('./pages/admin/OrdersPage'))
-const OrderDetailPage = lazy(() => import('./pages/admin/OrderDetailPage'))
-const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'))
+// Layouts
+import PublicLayout from './components/layout/PublicLayout';
+import AdminLayout from './components/layout/AdminLayout';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// Public Pages
+import HomePage from './pages/public/HomePage';
+import GalleryPage from './pages/public/GalleryPage';
+import ProductDetailPage from './pages/public/ProductDetailPage';
+import CustomerLoginPage from './pages/public/CustomerLoginPage';
+import CustomerRegisterPage from './pages/public/CustomerRegisterPage';
+import ProjectTrackingPage from './pages/public/ProjectTrackingPage';
+import InquiryFlowPage from './pages/public/InquiryFlowPage';
+import TrackOrderPage from './pages/public/TrackOrderPage';
+import ContactPage from './pages/public/ContactPage';
+import PrivacyPage from './pages/public/PrivacyPage';
+import ShippingReturnsPage from './pages/public/ShippingReturnsPage';
+import CustomerAccountPage from './pages/public/CustomerAccountPage';
+import ForgotPasswordPage from './pages/public/ForgotPasswordPage';
+import OrderPage from './pages/public/OrderPage';
+
+// Admin Pages
+import DashboardPage from './pages/admin/DashboardPage';
+import ProductsPage from './pages/admin/ProductsPage';
+import OrdersPage from './pages/admin/OrdersPage';
+import OrderDetailPage from './pages/admin/OrderDetailPage';
+import SettingsPage from './pages/admin/SettingsPage';
+import AdminLoginPage from './pages/admin/LoginPage';
+import ProductFormPage from './pages/admin/ProductFormPage';
 
 const App = () => {
   return (
-    <SiteSettingsProvider>
-      <AuthProvider>
-        <BrowserRouter>
-
-        {/* Toast notifications */}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: '#2a2a2a',
-              color: '#F5EDD6',
-              border: '1px solid rgba(139,105,20,0.4)',
-              fontFamily: 'Inter, sans-serif',
-              fontSize: '12px',
-            },
-          }}
-        />
-
-        <Suspense fallback={
-          <div className="min-h-screen flex items-center justify-center bg-surface-container-lowest">
-            <Spinner size="lg" />
-          </div>
-        }>
+    <AuthProvider>
+      <SiteSettingsProvider>
+        <Router>
+          <Toaster position="top-right" />
           <Routes>
-            {/* ── PUBLIC ROUTES ───────────────────── */}
-            <Route path="/"              element={<PublicLayout><HomePage /></PublicLayout>} />
-            <Route path="/gallery"       element={<PublicLayout><GalleryPage /></PublicLayout>} />
-            <Route path="/products/:id"  element={<PublicLayout><ProductDetailPage /></PublicLayout>} />
-            <Route path="/order"         element={<PublicLayout><OrderPage /></PublicLayout>} />
-            <Route path="/contact"       element={<PublicLayout><ContactPage /></PublicLayout>} />
-            <Route path="/track-order"   element={<PublicLayout><TrackOrderPage /></PublicLayout>} />
-            <Route path="/shipping-returns" element={<PublicLayout><ShippingReturnsPage /></PublicLayout>} />
-            <Route path="/privacy"       element={<PublicLayout><PrivacyPage /></PublicLayout>} />
-            <Route path="/login"         element={<PublicLayout><CustomerLoginPage /></PublicLayout>} />
-            <Route path="/register"      element={<PublicLayout><CustomerRegisterPage /></PublicLayout>} />
-            <Route path="/forgot-password" element={<PublicLayout><ForgotPasswordPage /></PublicLayout>} />
-            <Route path="/account"       element={<PublicLayout><CustomerAccountPage /></PublicLayout>} />
-            <Route path="/account/inquiry/:id" element={<PublicLayout><CustomerInquiryDetailPage /></PublicLayout>} />
-            <Route path="/track-project/:id" element={<ProjectTrackingPage />} />
+            {/* Public Routes */}
+            <Route element={<PublicLayout><Outlet /></PublicLayout>}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/gallery" element={<GalleryPage />} />
+              <Route path="/products/:id" element={<ProductDetailPage />} />
+              <Route path="/login" element={<CustomerLoginPage />} />
+              <Route path="/register" element={<CustomerRegisterPage />} />
+              <Route path="/track-order" element={<TrackOrderPage />} />
+              <Route path="/track/:id" element={<ProjectTrackingPage />} />
+              <Route path="/inquiry" element={<InquiryFlowPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/shipping-returns" element={<ShippingReturnsPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/order" element={<OrderPage />} />
+              
+              {/* Authenticated Customer Routes */}
+              <Route path="/account" element={<CustomerAccountPage />} />
+            </Route>
 
-            {/* ── ADMIN AUTH ──────────────────────── */}
-            <Route path="/admin/login"   element={<LoginPage />} />
-
-            {/* ── ADMIN PROTECTED ─────────────────── */}
-            <Route path="/admin/dashboard" element={
-              <ProtectedRoute><DashboardPage /></ProtectedRoute>
-            } />
-            <Route path="/admin/products" element={
-              <ProtectedRoute><ProductsPage /></ProtectedRoute>
-            } />
-            <Route path="/admin/products/new" element={
-              <ProtectedRoute><ProductFormPage /></ProtectedRoute>
-            } />
-            <Route path="/admin/products/:id/edit" element={
-              <ProtectedRoute><ProductFormPage /></ProtectedRoute>
-            } />
-            <Route path="/admin/orders" element={
-              <ProtectedRoute><OrdersPage /></ProtectedRoute>
-            } />
-            <Route path="/admin/orders/:id" element={
-              <ProtectedRoute><OrderDetailPage /></ProtectedRoute>
-            } />
-            <Route path="/admin/settings" element={
-              <ProtectedRoute><SettingsPage /></ProtectedRoute>
-            } />
-
-            {/* ── REDIRECTS ───────────────────────── */}
-            <Route path="/admin"     element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="*"          element={<Navigate to="/"               replace />} />
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            
+            <Route element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <Outlet />
+                </AdminLayout>
+              </ProtectedRoute>
+            }>
+              <Route path="/admin/dashboard" element={<DashboardPage />} />
+              <Route path="/admin/products" element={<ProductsPage />} />
+              <Route path="/admin/products/new" element={<ProductFormPage />} />
+              <Route path="/admin/products/edit/:id" element={<ProductFormPage />} />
+              <Route path="/admin/orders" element={<OrdersPage />} />
+              <Route path="/admin/order/:id" element={<OrderDetailPage />} />
+              <Route path="/admin/settings" element={<SettingsPage />} />
+            </Route>
           </Routes>
-        </Suspense>
+        </Router>
+      </SiteSettingsProvider>
+    </AuthProvider>
+  );
+};
 
-        </BrowserRouter>
-      </AuthProvider>
-    </SiteSettingsProvider>
-  )
-}
-
-export default App
+export default App;
