@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { syncManager } from '../utils/SyncManager';
 
 /**
@@ -25,8 +25,6 @@ export const useFormPersistence = (key, initialState, user) => {
   };
 
   const [state, setState] = useState(getStoredData);
-  const [isSyncing, setIsSyncing] = useState(false);
-
   // Handle background conflicts (e.g. server newer)
   useEffect(() => {
     const handleConflict = (e) => {

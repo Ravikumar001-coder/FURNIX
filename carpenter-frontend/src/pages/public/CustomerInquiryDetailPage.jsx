@@ -4,7 +4,6 @@ import { orderService } from '../../services/orderService'
 import { formatDate, timeAgo } from '../../utils/helpers'
 import { useAuth } from '../../context/AuthContext'
 import { ORDER_STATUSES } from '../../utils/constants'
-import { projectService } from '../../services/projectService'
 import { Link } from 'react-router-dom'
 
 const InfoRow = ({ icon, label, value }) => (
@@ -25,7 +24,7 @@ const CustomerInquiryDetailPage = () => {
   const { user } = useAuth()
 
   const [inquiry, setInquiry] = useState(null)
-  const [project, setProject] = useState(null)
+  const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -40,16 +39,11 @@ const CustomerInquiryDetailPage = () => {
         const data = await orderService.getMyInquiryById(id)
         setInquiry(data)
         
-        // Try to fetch project if inquiry is in production/later
         if (['IN_PRODUCTION', 'READY_FOR_DELIVERY', 'DELIVERED', 'READY'].includes(data.status)) {
           try {
-            // Ideally we'd have a project ID on the inquiry, 
-            // but for now we'll search by inquiry ID or similar if the API allows
-            // or just try to get project #1 for demo purposes if needed
-            // REAL LOGIC: projectService.getByInquiryId(id)
-            const proj = await projectService.getByInquiryId(id);
-            setProject(proj);
-          } catch (e) { /* project might not be created yet */ }
+            const ord = await orderService.getByInquiryId(id)
+            setOrder(ord)
+          } catch (e) { /* order might not be created yet */ }
         }
       } catch (err) {
         setError('Failed to load inquiry details. It may not exist or belong to you.')
@@ -181,7 +175,7 @@ const CustomerInquiryDetailPage = () => {
             </div>
 
             {/* Live Tracking Link */}
-            {project && (
+            {order && (
               <div className="bg-gray-900 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden group">
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                 <h2 className="font-headline text-lg tracking-wider uppercase mb-2 relative z-10 text-primary">
@@ -191,7 +185,7 @@ const CustomerInquiryDetailPage = () => {
                   Your commission is currently in the workshop. View the latest photos and updates.
                 </p>
                 <Link
-                  to={`/track-project/${project.id}`}
+                  to={`/track/${order.id}`}
                   className="flex items-center justify-center gap-2 w-full rounded-xl bg-white px-6 py-3 text-gray-900 font-bold tracking-wide hover:bg-primary-50 transition-all relative z-10 shadow-lg"
                 >
                   Track Live Production

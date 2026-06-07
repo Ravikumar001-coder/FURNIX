@@ -132,6 +132,11 @@ public class AuthService {
             customer.setFullName(request.getFullName());
         }
         if (request.getPhone() != null) {
+            customerRepository.findByPhone(request.getPhone())
+                    .filter(existing -> !existing.getId().equals(customer.getId()))
+                    .ifPresent(existing -> {
+                        throw new BadRequestException("Phone number is already in use");
+                    });
             customer.setPhone(request.getPhone());
         }
         if (request.getProfilePicture() != null) {
@@ -163,6 +168,7 @@ public class AuthService {
                 .username(customer.getEmail() != null ? customer.getEmail() : customer.getPhone())
                 .role(customer.getRole())
                 .fullName(customer.getFullName())
+                .phone(customer.getPhone())
                 .profilePicture(customer.getProfilePicture())
                 .provider(customer.getProvider() != null ? customer.getProvider().name() : AuthProvider.LOCAL.name())
                 .build();
@@ -178,6 +184,7 @@ public class AuthService {
                 .role(currentUser.getRole())
                 .expiresIn(jwtUtils.getExpirationSeconds())
                 .fullName(currentUser.getFullName())
+                .phone(currentUser.getPhone())
                 .profilePicture(currentUser.getProfilePicture())
                 .provider(currentUser.getProvider())
                 .build();
@@ -191,6 +198,7 @@ public class AuthService {
                 .role(customer.getRole())
                 .expiresIn(jwtUtils.getExpirationSeconds())
                 .fullName(customer.getFullName())
+                .phone(customer.getPhone())
                 .profilePicture(customer.getProfilePicture())
                 .provider(customer.getProvider() != null ? customer.getProvider().name() : AuthProvider.LOCAL.name())
                 .build();

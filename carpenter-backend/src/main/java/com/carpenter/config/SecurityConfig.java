@@ -41,6 +41,21 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/auth/me", "/api/v1/auth/me", "/api/v2/auth/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/auth/me", "/api/v1/auth/me", "/api/v2/auth/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/auth/change-password", "/api/v1/auth/change-password", "/api/v2/auth/change-password").authenticated()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/inquiries/draft", "/api/v1/inquiries/draft",
+                                "/api/v2/inquiries/draft").hasAuthority("ROLE_USER")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/inquiries/draft", "/api/v1/inquiries/draft",
+                                "/api/v2/inquiries/draft").hasAuthority("ROLE_USER")
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/inquiries/draft", "/api/v1/inquiries/draft",
+                                "/api/v2/inquiries/draft").hasAuthority("ROLE_USER")
 
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/v1/auth/**", "/api/v2/auth/**").permitAll()
@@ -97,10 +112,18 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/inquiries", "/api/v1/inquiries/**", "/api/v2/inquiries", "/api/v2/inquiries/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/v1/images", "/api/v1/images/**", "/api/v2/images", "/api/v2/images/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/v1/admin", "/api/v1/admin/**", "/api/v2/admin", "/api/v2/admin/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/quotes", "/api/quotes/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/quotes", "/api/quotes/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/quotes", "/api/quotes/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/api/quotes", "/api/quotes/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/quotes", "/api/quotes/**",
+                                "/api/v1/quotes", "/api/v1/quotes/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/quotes", "/api/quotes/**",
+                                "/api/v1/quotes", "/api/v1/quotes/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/quotes", "/api/quotes/**",
+                                "/api/v1/quotes", "/api/v1/quotes/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PATCH,
+                                "/api/quotes", "/api/quotes/**",
+                                "/api/v1/quotes", "/api/v1/quotes/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/projects", "/api/projects/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/projects", "/api/projects/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/gallery", "/api/gallery/**").permitAll()

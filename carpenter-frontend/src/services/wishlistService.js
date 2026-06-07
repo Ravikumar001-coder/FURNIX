@@ -1,4 +1,5 @@
 const WISHLIST_KEY = 'carpenter_wishlist';
+const sameProductId = (left, right) => String(left) === String(right);
 
 export const wishlistService = {
   get: () => {
@@ -8,7 +9,7 @@ export const wishlistService = {
   
   add: (product) => {
     const list = wishlistService.get();
-    if (!list.find(p => p.id === product.id)) {
+    if (!list.find(p => sameProductId(p.id, product.id))) {
       // Store minimal product info
       const item = {
         id: product.id,
@@ -25,14 +26,14 @@ export const wishlistService = {
   
   remove: (productId) => {
     const list = wishlistService.get();
-    const nextList = list.filter(p => p.id !== productId);
+    const nextList = list.filter(p => !sameProductId(p.id, productId));
     localStorage.setItem(WISHLIST_KEY, JSON.stringify(nextList));
     return nextList;
   },
   
   isWishlisted: (productId) => {
     const list = wishlistService.get();
-    return !!list.find(p => p.id === productId);
+    return !!list.find(p => sameProductId(p.id, productId));
   },
   
   toggle: (product) => {

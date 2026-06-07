@@ -28,7 +28,7 @@ export const useOrders = (initialStatus = null) => {
     }
   }, [status])
 
-  useEffect(() => { fetchOrders() }, [status])
+  useEffect(() => { fetchOrders() }, [fetchOrders])
 
   const updateStatus = async (id, newStatus, notes) => {
     const updated = await orderService.updateStatus(id, newStatus, notes)

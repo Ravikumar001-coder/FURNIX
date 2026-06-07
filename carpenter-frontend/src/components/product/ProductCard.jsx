@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { formatPrice, truncate } from '../../utils/helpers'
+import { truncate } from '../../utils/helpers'
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate()

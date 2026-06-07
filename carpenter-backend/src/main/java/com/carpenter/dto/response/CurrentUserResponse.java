@@ -15,6 +15,7 @@ public class CurrentUserResponse {
     private String username;
     private String role;
     private String fullName;
+    private String phone;
     private String profilePicture;
     private String provider;
 }

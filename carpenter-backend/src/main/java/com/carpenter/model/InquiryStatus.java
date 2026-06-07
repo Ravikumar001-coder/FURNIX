@@ -7,17 +7,11 @@ import java.util.List;
  * Full lifecycle of a custom carpentry inquiry.
  */
 public enum InquiryStatus {
-    NEW("New Inquiry"),
-    UNDER_REVIEW("Under Review"),
-    QUOTE_SENT("Quote Sent"),
-    NEGOTIATION("Negotiation"),
-    ACCEPTED("Accepted"),
-    REJECTED("Rejected"),
-    SITE_VISIT_SCHEDULED("Site Visit Scheduled"),
-    IN_PRODUCTION("In Production"),
-    READY_FOR_DELIVERY("Ready for Delivery"),
-    DELIVERED("Delivered"),
-    CLOSED("Closed");
+    SUBMITTED("Submitted"),
+    ACKNOWLEDGED("Acknowledged"),
+    INFO_REQUESTED("Info Requested"),
+    QUOTE_PENDING("Quote Pending"),
+    REJECTED("Rejected");
 
     private final String label;
 
@@ -30,7 +24,7 @@ public enum InquiryStatus {
     }
 
     public boolean isFinalState() {
-        return this == REJECTED || this == CLOSED;
+        return this == REJECTED;
     }
 
     public boolean canTransitionTo(InquiryStatus nextStatus) {
@@ -42,28 +36,19 @@ public enum InquiryStatus {
         
         // REJECTED can be triggered from early stages
         if (nextStatus == REJECTED) {
-            return this == NEW || this == UNDER_REVIEW || this == QUOTE_SENT || this == NEGOTIATION;
+            return true;
         }
 
         switch (this) {
-            case NEW:
-                return nextStatus == UNDER_REVIEW || nextStatus == REJECTED;
-            case UNDER_REVIEW:
-                return nextStatus == QUOTE_SENT || nextStatus == REJECTED;
-            case QUOTE_SENT:
-                return nextStatus == NEGOTIATION || nextStatus == ACCEPTED || nextStatus == REJECTED;
-            case NEGOTIATION:
-                return nextStatus == QUOTE_SENT || nextStatus == ACCEPTED || nextStatus == REJECTED;
-            case ACCEPTED:
-                return nextStatus == SITE_VISIT_SCHEDULED || nextStatus == IN_PRODUCTION;
-            case SITE_VISIT_SCHEDULED:
-                return nextStatus == IN_PRODUCTION;
-            case IN_PRODUCTION:
-                return nextStatus == READY_FOR_DELIVERY;
-            case READY_FOR_DELIVERY:
-                return nextStatus == DELIVERED;
-            case DELIVERED:
-                return nextStatus == CLOSED;
+            case SUBMITTED:
+                return nextStatus == ACKNOWLEDGED;
+            case ACKNOWLEDGED:
+                return nextStatus == INFO_REQUESTED || nextStatus == QUOTE_PENDING;
+            case INFO_REQUESTED:
+                return nextStatus == SUBMITTED; // Client responds, goes back to submitted
+            case QUOTE_PENDING:
+                // After quote pending, it transitions to quotation lifecycle
+                return false;
             default:
                 return false;
         }

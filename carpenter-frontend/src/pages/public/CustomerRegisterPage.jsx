@@ -7,7 +7,7 @@ import { Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 import GoogleSignInButton from '../../components/auth/GoogleSignInButton'
 import WhatsAppLoginModal from '../../components/auth/WhatsAppLoginModal'
 import logo from '/assets/furnix-logo.png'
-import { buildWhatsAppLink, getSiteSetting } from '../../utils/siteSettings'
+import { getSiteSetting } from '../../utils/siteSettings'
 
 const CustomerRegisterPage = () => {
   const [form, setForm] = useState({
@@ -26,11 +26,6 @@ const CustomerRegisterPage = () => {
   const { settings } = useSiteSettings()
   const navigate = useNavigate()
   const brandName = getSiteSetting(settings, 'brand.name', 'Furnix')
-  const whatsappSignupLink = buildWhatsAppLink(
-    settings,
-    `I want to register for a ${brandName} account`
-  )
-  const isWhatsAppConfigured = Boolean(whatsappSignupLink)
 
   const handleWhatsAppClick = (event) => {
     event.preventDefault()

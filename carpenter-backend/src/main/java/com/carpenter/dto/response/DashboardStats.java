@@ -14,10 +14,12 @@ public class DashboardStats {
     private long activeProducts;
 
     private long totalInquiries;
-    private long newInquiries;
-    private long underReviewInquiries;
-    private long quoteSentInquiries;
-    private long acceptedInquiries;
-    private long inProductionInquiries;
-    private long deliveredInquiries;
+    private long submittedInquiries;
+    private long acknowledgedInquiries;
+    private long infoRequestedInquiries;
+    private long quotePendingInquiries;
+    private long rejectedInquiries;
+
+    private long inProductionOrders;
+    private long deliveredOrders;
 }

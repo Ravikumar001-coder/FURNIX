@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { orderService } from '../../services/orderService';
 import { useAuth } from '../../context/AuthContext';
@@ -73,7 +73,7 @@ const OrderPage = () => {
             }
         };
         fetchBackendDraft();
-    }, [user]);
+    }, [forceSetState, form.description, idempotencyKey, user, version]);
 
     // PRE-FILL: Auto-fill user details if new form
     useEffect(() => {
@@ -85,7 +85,7 @@ const OrderPage = () => {
                 phone: prev.phone || user.phone || '',
             }));
         }
-    }, [user]);
+    }, [form.email, form.name, form.phone, setForm, user]);
 
     const handleSubmit = async (e) => {
         if (e) e.preventDefault();
@@ -102,7 +102,7 @@ const OrderPage = () => {
             ...form,
             budgetMin: form.budgetMin ? parseFloat(form.budgetMin) : null,
             budgetMax: form.budgetMax ? parseFloat(form.budgetMax) : null,
-            referenceImages: Array.isArray(form.referenceImages) ? form.referenceImages.join(',') : '',
+            referenceImages: Array.isArray(form.referenceImages) ? form.referenceImages : [],
             idempotencyKey: idempotencyKey // CRITICAL: Prevent duplicate submission
         };
         

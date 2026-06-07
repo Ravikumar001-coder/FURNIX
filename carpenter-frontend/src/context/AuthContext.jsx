@@ -7,6 +7,7 @@ const toUser = (payload = {}) => ({
   username: payload.username,
   role: payload.role,
   fullName: payload.fullName || payload.username,
+  phone: payload.phone || null,
   profilePicture: payload.profilePicture || null,
   provider: payload.provider || 'LOCAL',
 })

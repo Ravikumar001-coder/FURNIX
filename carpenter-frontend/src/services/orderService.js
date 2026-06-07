@@ -71,4 +71,15 @@ export const orderService = {
     const response = await api.delete('/inquiries/draft')
     return response.data
   },
+
+  // --- Real Order Endpoints ---
+  getOrderById: async (id) => {
+    const response = await api.get(`/orders/${id}`)
+    return response.data.data
+  },
+
+  getByInquiryId: async (inquiryId) => {
+    const response = await api.get(`/orders/inquiry/${inquiryId}`)
+    return response.data.data
+  }
 }

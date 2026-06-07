@@ -11,6 +11,7 @@ const normalizeUser = (data = {}) => ({
   username: data.username,
   role: data.role,
   fullName: data.fullName || data.username,
+  phone: data.phone || null,
   profilePicture: data.profilePicture || null,
   provider: data.provider || 'LOCAL',
 })

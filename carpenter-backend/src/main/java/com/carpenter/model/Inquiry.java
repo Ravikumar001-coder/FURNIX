@@ -91,7 +91,7 @@ public class Inquiry {
     @Enumerated(EnumType.STRING)
     @Column(name = "status_v2", nullable = false, length = 50)
     @Builder.Default
-    private InquiryStatus status = InquiryStatus.NEW;
+    private InquiryStatus status = InquiryStatus.SUBMITTED;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)

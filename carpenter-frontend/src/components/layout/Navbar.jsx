@@ -54,9 +54,9 @@ const Navbar = ({ rightContent }) => {
 
     return (
         <>
-            <nav className="fixed top-0 w-full z-50 bg-surface/95 backdrop-blur-xl border-b border-outline-variant/10 shadow-sm transition-all duration-300">
-                <div className="flex justify-between items-center w-full px-4 md:px-8 py-3 md:py-4 max-w-screen-2xl mx-auto">
-                    {/* Left: Brand - Increased Size */}
+            <nav className="public-header">
+                <div className="flex justify-between items-center w-full max-w-screen-2xl mx-auto">
+                    {/* Left: Brand */}
                     <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-300">
                         <img src={logo} alt="Furnix" className="h-20 md:h-25 w-auto object-contain" />
                     </Link>
@@ -248,8 +248,6 @@ const Navbar = ({ rightContent }) => {
                     onClose={() => setShowWhatsAppModal(false)} 
                 />
             </nav>
-            {/* Spacer */}
-            <div className="h-24 md:h-32" />
         </>
     );
 };

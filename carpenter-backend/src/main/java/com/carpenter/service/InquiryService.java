@@ -9,6 +9,8 @@ import com.carpenter.model.Inquiry;
 import com.carpenter.model.InquiryStatus;
 import com.carpenter.repository.CustomerRepository;
 import com.carpenter.repository.InquiryRepository;
+import java.util.Locale;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,23 +27,33 @@ public class InquiryService {
     private final NotificationService notificationService;
     private final CustomerRepository customerRepository;
     private final com.carpenter.repository.ProductRepository productRepository;
+    private final com.carpenter.repository.OrderRepository orderRepository;
 
     @Transactional
-    public InquiryResponse createInquiry(InquiryRequest request) {
+    public InquiryResponse createInquiry(InquiryRequest request, String authenticatedIdentifier) {
+        String idempotencyKey = request.getIdempotencyKey();
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            idempotencyKey = UUID.randomUUID().toString();
+        }
+
         // Idempotency check
-        if (request.getIdempotencyKey() != null) {
-            java.util.Optional<Inquiry> existing = inquiryRepository.findByIdempotencyKey(request.getIdempotencyKey());
+        if (idempotencyKey != null) {
+            java.util.Optional<Inquiry> existing = inquiryRepository.findByIdempotencyKey(idempotencyKey);
             if (existing.isPresent()) {
                 return mapToResponse(existing.get());
             }
         }
 
-        Customer customer = customerRepository.findByEmail(request.getEmail()).orElse(null);
+        String normalizedEmail = normalizeNullable(request.getEmail());
+        Customer customer = resolveCustomer(authenticatedIdentifier);
+        if (customer == null && normalizedEmail != null) {
+            customer = customerRepository.findByEmail(normalizedEmail).orElse(null);
+        }
 
         Inquiry inquiry = Inquiry.builder()
                 .customer(customer)
                 .name(request.getName())
-                .email(request.getEmail())
+                .email(normalizedEmail)
                 .phone(request.getPhone())
                 .address(request.getAddress())
                 .city(request.getCity())
@@ -57,8 +69,8 @@ public class InquiryService {
                 .siteVisitRequired(request.getSiteVisitRequired())
                 .description(request.getDescription())
                 .referenceImages(request.getReferenceImages() != null ? String.join(",", request.getReferenceImages()) : null)
-                .status(InquiryStatus.NEW)
-                .idempotencyKey(request.getIdempotencyKey())
+                .status(InquiryStatus.SUBMITTED)
+                .idempotencyKey(idempotencyKey)
                 .build();
 
         Inquiry saved = inquiryRepository.save(inquiry);
@@ -76,7 +88,10 @@ public class InquiryService {
 
     public Page<InquiryResponse> getInquiriesForCustomer(String email, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Inquiry> inquiries = inquiryRepository.findByEmailOrderByCreatedAtDesc(email, pageable);
+        Customer customer = resolveCustomer(email);
+        Page<Inquiry> inquiries = customer != null
+                ? inquiryRepository.findByCustomerIdOrderByCreatedAtDesc(customer.getId(), pageable)
+                : inquiryRepository.findByEmailOrderByCreatedAtDesc(email, pageable);
         return inquiries.map(this::mapToResponse);
     }
 
@@ -87,7 +102,7 @@ public class InquiryService {
 
     public InquiryResponse getCustomerInquiryById(Long id, String email) {
         Inquiry inquiry = findInquiryEntity(id);
-        if (inquiry.getEmail() == null || !inquiry.getEmail().equalsIgnoreCase(email)) {
+        if (!canCustomerAccess(inquiry, email)) {
             throw new ResourceNotFoundException("Inquiry", id);
         }
         return mapToResponse(inquiry);
@@ -125,6 +140,33 @@ public class InquiryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Inquiry", id));
     }
 
+    private Customer resolveCustomer(String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            return null;
+        }
+        return customerRepository.findByEmail(identifier)
+                .or(() -> customerRepository.findByPhone(identifier))
+                .orElse(null);
+    }
+
+    private boolean canCustomerAccess(Inquiry inquiry, String identifier) {
+        Customer customer = resolveCustomer(identifier);
+        if (customer != null && inquiry.getCustomer() != null && customer.getId().equals(inquiry.getCustomer().getId())) {
+            return true;
+        }
+        if (inquiry.getEmail() != null && inquiry.getEmail().equalsIgnoreCase(identifier)) {
+            return true;
+        }
+        return inquiry.getPhone() != null && inquiry.getPhone().equals(identifier);
+    }
+
+    private String normalizeNullable(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim().toLowerCase(Locale.ROOT);
+    }
+
     private InquiryResponse mapToResponse(Inquiry inquiry) {
         return InquiryResponse.builder()
                 .id(inquiry.getId())
@@ -141,6 +183,8 @@ public class InquiryService {
                 .finishPreference(inquiry.getFinishPreference())
                 .budgetMin(inquiry.getBudgetMin())
                 .budgetMax(inquiry.getBudgetMax())
+
+
                 .timeline(inquiry.getTimeline())
                 .siteVisitRequired(inquiry.getSiteVisitRequired())
                 .description(inquiry.getDescription())
@@ -159,12 +203,13 @@ public class InquiryService {
                 .totalProducts(productRepository.count())
                 .activeProducts(productRepository.countByActiveTrue())
                 .totalInquiries(inquiryRepository.count())
-                .newInquiries(inquiryRepository.countByStatus(InquiryStatus.NEW))
-                .underReviewInquiries(inquiryRepository.countByStatus(InquiryStatus.UNDER_REVIEW))
-                .quoteSentInquiries(inquiryRepository.countByStatus(InquiryStatus.QUOTE_SENT))
-                .acceptedInquiries(inquiryRepository.countByStatus(InquiryStatus.ACCEPTED))
-                .inProductionInquiries(inquiryRepository.countByStatus(InquiryStatus.IN_PRODUCTION))
-                .deliveredInquiries(inquiryRepository.countByStatus(InquiryStatus.DELIVERED))
+                .submittedInquiries(inquiryRepository.countByStatus(InquiryStatus.SUBMITTED))
+                .acknowledgedInquiries(inquiryRepository.countByStatus(InquiryStatus.ACKNOWLEDGED))
+                .infoRequestedInquiries(inquiryRepository.countByStatus(InquiryStatus.INFO_REQUESTED))
+                .quotePendingInquiries(inquiryRepository.countByStatus(InquiryStatus.QUOTE_PENDING))
+                .rejectedInquiries(inquiryRepository.countByStatus(InquiryStatus.REJECTED))
+                .inProductionOrders(orderRepository.countByStatus(com.carpenter.model.OrderState.IN_PRODUCTION))
+                .deliveredOrders(orderRepository.countByStatus(com.carpenter.model.OrderState.DELIVERED))
                 .build();
     }
 }

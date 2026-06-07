@@ -10,12 +10,12 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: 3005,
     // Proxy API calls during development
     // so you don't get CORS issues
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8081',
         changeOrigin: true,
         secure: false,
       },

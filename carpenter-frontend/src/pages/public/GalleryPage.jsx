@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { galleryService } from '../../services/galleryService'
 import { X, SlidersHorizontal, ArrowUpRight, ChevronDown } from 'lucide-react'
@@ -225,10 +225,10 @@ const LightBox = ({ item, onClose }) => {
             )}
 
             <Link
-              to="/custom-order"
+              to="/order"
               className="block w-full text-center bg-gray-900 text-white font-semibold py-4 rounded-xl hover:bg-gray-700 transition-colors mt-4"
             >
-              Commission Similar Piece →
+              Commission Similar Piece
             </Link>
           </div>
         </div>
@@ -260,7 +260,8 @@ const GalleryPage = () => {
 
     try {
       const data = await galleryService.getAll({
-        ...newFilters,
+        category: newFilters.category,
+        roomType: newFilters.subCategory,
         material: activeMaterials[0] || newFilters.material || '',
         page: newPage,
         size: 18
@@ -282,7 +283,7 @@ const GalleryPage = () => {
 
   useEffect(() => {
     loadGallery(filters, 0)
-  }, [filters, activeMaterials])
+  }, [filters, loadGallery])
 
   const toggleMaterial = (mat) => {
     setActiveMaterials(prev =>
@@ -299,16 +300,7 @@ const GalleryPage = () => {
     filters.category, filters.subCategory, ...activeMaterials
   ].filter(Boolean).length
 
-  const SAMPLE_ITEMS = [
-    { id: 1, title: 'Heirloom Teak Dining Set', category: 'TABLES', roomType: 'DINING_ROOM', coverImage: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80', materialsList: ['Teak', 'Brass Hardware'], featured: true, projectDuration: '8 weeks', clientLocation: 'Koramangala, Bangalore' },
-    { id: 2, title: 'Floating Walnut Bookshelf', category: 'STORAGE', roomType: 'HOME_OFFICE', coverImage: 'https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=800&q=80', materialsList: ['Walnut', 'Steel'], featured: false, projectDuration: '3 weeks', clientLocation: 'Banjara Hills, Hyderabad' },
-    { id: 3, title: 'Minimal Platform Bed', category: 'BEDS', roomType: 'BEDROOM', coverImage: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80', materialsList: ['Oak', 'Linen Upholstery'], featured: true, projectDuration: '6 weeks', clientLocation: 'Juhu, Mumbai' },
-    { id: 4, title: 'Carved Rosewood Console', category: 'DECOR', roomType: 'LIVING_ROOM', coverImage: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=800&q=80', materialsList: ['Rosewood'], featured: false, projectDuration: '4 weeks', clientLocation: 'Vasant Vihar, Delhi' },
-    { id: 5, title: 'Studio Lounge Chair', category: 'SEATING', roomType: 'LIVING_ROOM', coverImage: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80', materialsList: ['Teak', 'Leather'], featured: false, projectDuration: '5 weeks', clientLocation: 'Alwarpet, Chennai' },
-    { id: 6, title: 'Modular Kitchen Island', category: 'KITCHEN', roomType: 'KITCHEN', coverImage: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=800&q=80', materialsList: ['Birch Ply', 'Marble Countertop'], featured: false, projectDuration: '10 weeks', clientLocation: 'Whitefield, Bangalore' },
-  ]
-
-  const displayItems = items.length > 0 ? items : (loading ? [] : SAMPLE_ITEMS)
+  const displayItems = items
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -530,7 +522,7 @@ const GalleryPage = () => {
               Share your vision and our master craftsmen will bring it to life — exactly as you imagined it.
             </p>
             <Link
-              to="/custom-order"
+              to="/order"
               className="inline-flex items-center gap-2 bg-white text-gray-900 font-bold px-8 py-4 rounded-full hover:bg-gray-100 transition-all"
             >
               Start Your Project <ArrowUpRight size={18} />

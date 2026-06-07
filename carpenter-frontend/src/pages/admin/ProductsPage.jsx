@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminLayout from '../../components/layout/AdminLayout'
 import { productService } from '../../services/productService'
@@ -12,6 +12,7 @@ const ProductsPage = () => {
   const [loading,   setLoading]   = useState(true)
   const [category,  setCategory]  = useState('ALL')
   const [search,    setSearch]    = useState('')
+  const [appliedSearch, setAppliedSearch] = useState('')
   const [error,     setError]     = useState('')
   const [deleting,  setDeleting]  = useState(null)
   
@@ -22,7 +23,7 @@ const ProductsPage = () => {
   const [isLast, setIsLast] = useState(true)
   const [isFirst, setIsFirst] = useState(true)
 
-  const loadProducts = async (cat = category, kw = search, p = page) => {
+  const loadProducts = useCallback(async (cat, kw, p) => {
     setLoading(true)
     try {
       const pageResponse = await productService.getAll(cat === 'ALL' ? null : cat, kw, p, 10)
@@ -46,19 +47,19 @@ const ProductsPage = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   // Load when category or page changes
   useEffect(() => { 
-    loadProducts(category, search, page) 
-  }, [category, page])
+    loadProducts(category, appliedSearch, page) 
+  }, [appliedSearch, category, loadProducts, page])
 
   // Optional: Add debounce for search or manual search button.
   // For now, let's keep search on enter or blur to prevent spam.
   const handleSearch = (e) => {
     e.preventDefault()
     setPage(0) // reset to first page on search
-    loadProducts(category, search, 0)
+    setAppliedSearch(search)
   }
 
   // Using server-side search instead of client-side

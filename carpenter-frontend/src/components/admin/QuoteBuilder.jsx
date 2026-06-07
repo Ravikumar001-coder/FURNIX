@@ -1,12 +1,20 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, Trash2, Send, Save, Calculator, IndianRupee } from 'lucide-react';
+import { Plus, Trash2, Send, Save } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { quoteService } from '../../services/quoteService';
 
+let nextDraftItemId = 1;
+
+const createEmptyItem = () => ({
+  id: `draft-${nextDraftItemId++}`,
+  name: '',
+  description: '',
+  quantity: 1,
+  unitPrice: 0
+});
+
 const QuoteBuilder = ({ inquiryId, customerName, onSaveSuccess }) => {
-  const [items, setItems] = useState([
-    { id: Date.now(), name: '', description: '', quantity: 1, unitPrice: 0 }
-  ]);
+  const [items, setItems] = useState(() => [createEmptyItem()]);
   const [discount, setDiscount] = useState(0);
   const [taxRate, setTaxRate] = useState(18); // Default 18% GST
   const [notes, setNotes] = useState('');
@@ -21,13 +29,17 @@ const QuoteBuilder = ({ inquiryId, customerName, onSaveSuccess }) => {
         if (response?.data) {
           const q = response.data;
           setExistingQuoteId(q.id);
-          setItems(q.items.map(item => ({
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice
-          })));
+          setItems(
+            q.items?.length
+              ? q.items.map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  description: item.description,
+                  quantity: item.quantity,
+                  unitPrice: item.unitPrice
+                }))
+              : [createEmptyItem()]
+          );
           setDiscount(q.discount || 0);
           setNotes(q.notes || '');
           // Assuming tax amount is stored, we calculate rate or just set amount
@@ -54,7 +66,7 @@ const QuoteBuilder = ({ inquiryId, customerName, onSaveSuccess }) => {
   }, [subtotal, discount, taxAmount]);
 
   const addItem = () => {
-    setItems([...items, { id: Date.now(), name: '', description: '', quantity: 1, unitPrice: 0 }]);
+    setItems([...items, createEmptyItem()]);
   };
 
   const removeItem = (id) => {
@@ -95,6 +107,9 @@ const QuoteBuilder = ({ inquiryId, customerName, onSaveSuccess }) => {
         if (status === 'SENT') await quoteService.send(existingQuoteId);
       } else {
         const created = await quoteService.create(payload);
+        if (created?.data?.id) {
+          setExistingQuoteId(created.data.id);
+        }
         if (status === 'SENT' && created?.data?.id) {
           await quoteService.send(created.data.id);
         }

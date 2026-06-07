@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
 
     Page<Inquiry> findByEmailOrderByCreatedAtDesc(String email, Pageable pageable);
+    Page<Inquiry> findByCustomerIdOrderByCreatedAtDesc(Long customerId, Pageable pageable);
 
     @Query("SELECT i FROM Inquiry i WHERE " +
            "(:status IS NULL OR i.status = :status) AND " +

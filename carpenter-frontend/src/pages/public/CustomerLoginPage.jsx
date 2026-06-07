@@ -7,7 +7,7 @@ import { Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 import GoogleSignInButton from '../../components/auth/GoogleSignInButton'
 import WhatsAppLoginModal from '../../components/auth/WhatsAppLoginModal'
 import logo from '/assets/furnix-logo.png'
-import { buildWhatsAppLink, getSiteSetting } from '../../utils/siteSettings'
+import { getSiteSetting } from '../../utils/siteSettings'
 
 const CustomerLoginPage = () => {
   const [email, setEmail] = useState('')

@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { orderService } from '../../services/orderService'
 import { wishlistService } from '../../services/wishlistService'
-import { formatCurrency } from '../../utils/helpers'
 import { toast } from 'react-hot-toast'
 
 const CustomerAccountPage = () => {
@@ -235,7 +234,7 @@ const CustomerAccountPage = () => {
             <section className="bg-white rounded-3xl border border-outline-variant/20 p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="font-headline text-2xl text-on-surface">Recent Inquiries</h2>
-                <Link to="/custom-order" className="text-sm font-body text-primary font-bold hover:underline flex items-center gap-1">
+                <Link to="/order" className="text-sm font-body text-primary font-bold hover:underline flex items-center gap-1">
                   Start New Design <span className="material-symbols-outlined text-sm">add_circle</span>
                 </Link>
               </div>

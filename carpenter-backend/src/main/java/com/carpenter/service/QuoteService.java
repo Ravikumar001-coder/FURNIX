@@ -38,6 +38,7 @@ public class QuoteService {
     private final InquiryRepository inquiryRepository;
     private final NotificationService notificationService;
     private final TaxConfigurationService taxConfigurationService;
+    private final OrderService orderService;
 
     @Transactional(readOnly = true)
     public QuoteCalculationResponse calculateQuote(QuoteCalculationRequest request) {
@@ -178,6 +179,10 @@ public class QuoteService {
         QuoteStatus oldStatus = quote.getStatus();
         quote.setStatus(status);
         Quote saved = quoteRepository.save(quote);
+
+        if (status == QuoteStatus.ACCEPTED) {
+            orderService.createOrderFromQuote(saved);
+        }
 
         if (status == QuoteStatus.SENT && oldStatus != QuoteStatus.SENT) {
             notificationService.notifyQuoteSent(

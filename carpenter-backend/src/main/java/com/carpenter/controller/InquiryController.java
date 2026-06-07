@@ -30,6 +30,9 @@ public class InquiryController {
     public ResponseEntity<ApiResponse<Void>> saveDraft(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody com.carpenter.dto.request.InquiryDraftRequest draftRequest) {
+        if (userDetails == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Not authenticated");
+        }
         draftService.saveDraft(userDetails.getUsername(), draftRequest.getContent(), draftRequest.getVersion());
         return ResponseEntity.ok(ApiResponse.success("Draft saved", null));
     }
@@ -38,6 +41,9 @@ public class InquiryController {
     @GetMapping("/draft")
     public ResponseEntity<ApiResponse<com.carpenter.model.InquiryDraft>> getDraft(
             @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Not authenticated");
+        }
         return draftService.getDraft(userDetails.getUsername())
                 .map(draft -> ResponseEntity.ok(ApiResponse.success("Draft fetched", draft)))
                 .orElse(ResponseEntity.ok(ApiResponse.success("No draft found", null)));
@@ -47,14 +53,19 @@ public class InquiryController {
     @DeleteMapping("/draft")
     public ResponseEntity<ApiResponse<Void>> deleteDraft(
             @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Not authenticated");
+        }
         draftService.deleteDraft(userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success("Draft deleted", null));
     }
 
     @Operation(summary = "Create an inquiry", description = "Customer submits a custom furniture project brief.")
     @PostMapping
-    public ResponseEntity<ApiResponse<InquiryResponse>> createInquiry(@Valid @RequestBody InquiryRequest request) {
-        InquiryResponse response = inquiryService.createInquiry(request);
+    public ResponseEntity<ApiResponse<InquiryResponse>> createInquiry(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody InquiryRequest request) {
+        InquiryResponse response = inquiryService.createInquiry(request, userDetails != null ? userDetails.getUsername() : null);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Inquiry submitted successfully", response));
     }

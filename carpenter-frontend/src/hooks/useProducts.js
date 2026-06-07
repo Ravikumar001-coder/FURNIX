@@ -26,7 +26,7 @@ export const useProducts = (initialCategory = null) => {
     }
   }, [category])
 
-  useEffect(() => { fetchProducts() }, [category])
+  useEffect(() => { fetchProducts() }, [fetchProducts])
 
   const search = async (keyword) => {
     if (!keyword.trim()) { fetchProducts(); return }

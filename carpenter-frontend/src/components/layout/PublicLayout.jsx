@@ -3,9 +3,9 @@ import Footer from './Footer';
 
 const PublicLayout = ({ children }) => {
   return (
-    <div className="bg-background text-on-background font-body antialiased min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container">
+    <div className="bg-public min-h-screen flex flex-col font-sans">
       <Navbar />
-      <main className="flex-grow">
+      <main className="flex-grow page-wrapper">
         {children}
       </main>
       <Footer />

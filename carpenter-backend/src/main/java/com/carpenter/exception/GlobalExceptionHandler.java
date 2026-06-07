@@ -139,7 +139,7 @@ public class GlobalExceptionHandler {
         return buildProblem(
             HttpStatus.FORBIDDEN,
             "Access denied",
-            "Access denied. Admin privileges required.",
+            "You do not have permission to perform this action.",
             request
         );
     }
